@@ -95,7 +95,7 @@ namespace AccessGrid
         /// </summary>
         internal async Task<T> PatchAsync<T>(string endpoint, object data)
         {
-            return await MakeRequestAsync<T>(HttpMethod.Patch, endpoint, data);
+            return await MakeRequestAsync<T>(new HttpMethod("PATCH"), endpoint, data);
         }
         #endregion
 
@@ -131,14 +131,15 @@ namespace AccessGrid
                 if (parts.Length >= 2)
                 {
                     // For actions like unlink/suspend/resume, get the card ID (second to last part)
-                    if (parts[^1] == "suspend" || parts[^1] == "resume" || parts[^1] == "unlink" || parts[^1] == "delete")
+                    string lastPart = parts[parts.Length - 1];
+                    if (lastPart == "suspend" || lastPart == "resume" || lastPart == "unlink" || lastPart == "delete")
                     {
-                        resourceId = parts[^2];
+                        resourceId = parts[parts.Length - 2];
                     }
                     else
                     {
                         // Otherwise, the ID is typically the last part of the path
-                        resourceId = parts[^1];
+                        resourceId = lastPart;
                     }
                 }
             }

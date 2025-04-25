@@ -27,7 +27,7 @@ namespace AccessGridExample
                 Console.WriteLine("Listing access cards...");
                 var cards = await client.AccessCards.ListAsync(new ListKeysRequest
                 {
-                    TemplateId = "your_template_id",
+                    TemplateId = "573087dd976",
                     State = "active"
                 });
 
@@ -41,50 +41,53 @@ namespace AccessGridExample
                 Console.WriteLine("\nProvisioning a new card...");
                 var newCard = await client.AccessCards.ProvisionAsync(new ProvisionCardRequest
                 {
-                    CardTemplateId = "your_template_id",
-                    EmployeeId = "emp-123",
+                    CardTemplateId = "573087dd976",
+                    EmployeeId = "101010101",
+                    CardNumber = "42069",
+                    SiteCode = "42",
                     FullName = "John Doe",
-                    Email = "john.doe@example.com",
-                    PhoneNumber = "+15551234567",
-                    Classification = "full_time",
+                    Email = "ab@accessgrid.com",
+                    PhoneNumber = "+17869064810",
+                    Classification = "Employee",
+                    Title = "Developer",
                     StartDate = DateTime.UtcNow,
                     ExpirationDate = DateTime.UtcNow.AddYears(1)
                 });
 
                 Console.WriteLine($"Card provisioned successfully. Install URL: {newCard.Url}");
 
-                // Example 3: Update a card
-                Console.WriteLine("\nUpdating a card...");
-                var updatedCard = await client.AccessCards.UpdateAsync(new UpdateCardRequest
-                {
-                    CardId = newCard.Id,
-                    FullName = "John Smith",
-                    ExpirationDate = DateTime.UtcNow.AddYears(2)
-                });
+                // // Example 3: Update a card
+                // Console.WriteLine("\nUpdating a card...");
+                // var updatedCard = await client.AccessCards.UpdateAsync(new UpdateCardRequest
+                // {
+                //     CardId = newCard.Id,
+                //     FullName = "John Smith",
+                //     ExpirationDate = DateTime.UtcNow.AddYears(2)
+                // });
 
-                Console.WriteLine($"Card updated successfully. New name: {updatedCard.FullName}");
+                // Console.WriteLine($"Card updated successfully. New name: {updatedCard.FullName}");
 
-                // Example 4: Suspend a card
-                Console.WriteLine("\nSuspending a card...");
-                var suspendedCard = await client.AccessCards.SuspendAsync(newCard.Id);
-                Console.WriteLine($"Card suspended successfully. State: {suspendedCard.State}");
+                // // Example 4: Suspend a card
+                // Console.WriteLine("\nSuspending a card...");
+                // var suspendedCard = await client.AccessCards.SuspendAsync(newCard.Id);
+                // Console.WriteLine($"Card suspended successfully. State: {suspendedCard.State}");
 
-                // Example 5: Resume a card
-                Console.WriteLine("\nResuming a card...");
-                var resumedCard = await client.AccessCards.ResumeAsync(newCard.Id);
-                Console.WriteLine($"Card resumed successfully. State: {resumedCard.State}");
+                // // Example 5: Resume a card
+                // Console.WriteLine("\nResuming a card...");
+                // var resumedCard = await client.AccessCards.ResumeAsync(newCard.Id);
+                // Console.WriteLine($"Card resumed successfully. State: {resumedCard.State}");
 
-                // Example 6: Enterprise example - Read template (for enterprise customers)
-                Console.WriteLine("\nReading template info...");
-                try
-                {
-                    var template = await client.Console.ReadTemplateAsync("your_template_id");
-                    Console.WriteLine($"Template: {template.Name}, Platform: {template.Platform}");
-                }
-                catch (AccessGridException ex)
-                {
-                    Console.WriteLine($"Enterprise operation failed: {ex.Message}");
-                }
+                // // Example 6: Enterprise example - Read template (for enterprise customers)
+                // Console.WriteLine("\nReading template info...");
+                // try
+                // {
+                //     var template = await client.Console.ReadTemplateAsync("your_template_id");
+                //     Console.WriteLine($"Template: {template.Name}, Platform: {template.Platform}");
+                // }
+                // catch (AccessGridException ex)
+                // {
+                //     Console.WriteLine($"Enterprise operation failed: {ex.Message}");
+                // }
             }
             catch (Exception ex)
             {
