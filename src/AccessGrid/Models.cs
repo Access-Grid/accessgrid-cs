@@ -145,6 +145,12 @@ namespace AccessGrid
         public string Classification { get; set; }
 
         /// <summary>
+        /// Employee title or role within the organization
+        /// </summary>
+        [JsonPropertyName("title")]
+        public string Title { get; set; }
+
+        /// <summary>
         /// ISO8601 timestamp when the card becomes active
         /// </summary>
         [JsonPropertyName("start_date")]
@@ -224,6 +230,12 @@ namespace AccessGrid
         /// </summary>
         [JsonPropertyName("classification")]
         public string Classification { get; set; }
+
+        /// <summary>
+        /// Updated employee title or role within the organization
+        /// </summary>
+        [JsonPropertyName("title")]
+        public string Title { get; set; }
 
         /// <summary>
         /// Updated ISO8601 timestamp when the card expires
