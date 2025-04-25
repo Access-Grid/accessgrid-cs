@@ -23,12 +23,17 @@ namespace AccessGridExample
 
             try
             {
+                Console.WriteLine("AccessGrid Client Test");
+                Console.WriteLine("API Credentials:");
+                Console.WriteLine($"  Account ID: {accountId}");
+                Console.WriteLine($"  Secret Key: {secretKey.Substring(0, 3)}...{secretKey.Substring(secretKey.Length - 3)}");
+                
                 // Example 1: List cards
-                Console.WriteLine("Listing access cards...");
+                Console.WriteLine("\nListing access cards...");
                 var cards = await client.AccessCards.ListAsync(new ListKeysRequest
                 {
                     TemplateId = "573087dd976",
-                    State = "active"
+                    // No state filter to get all cards
                 });
 
                 Console.WriteLine($"Found {cards.Count} active cards");

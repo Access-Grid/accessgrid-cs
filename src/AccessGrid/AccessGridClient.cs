@@ -101,20 +101,55 @@ namespace AccessGrid
 
         #region Helpers
         /// <summary>
-        /// Generates HMAC signature for the payload according to the shared secret scheme:
-        /// SHA256.update(shared_secret + base64.encode(payload)).hexdigest()
+        /// Generates HMAC signature for the payload according to the shared secret scheme.
+        /// This exactly matches the Python implementation:
+        ///
+        /// def _generate_signature(self, payload: str) -> str:
+        ///     encoded_payload = base64.b64encode(payload.encode())
+        ///     signature = hmac.new(
+        ///         self.secret_key.encode(), 
+        ///         encoded_payload,
+        ///         hashlib.sha256
+        ///     ).hexdigest()
+        ///     return signature
         /// </summary>
         private string GenerateSignature(string payload)
         {
-            // Base64 encode the payload
-            var encodedPayload = Convert.ToBase64String(Encoding.UTF8.GetBytes(payload));
+            System.Console.WriteLine($"DEBUG: Generating signature for payload: {payload}");
             
-            // Create HMAC using the shared secret as the key and the base64 encoded payload as the message
-            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(_secretKey));
-            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(encodedPayload));
-            
-            // Convert hash to hexadecimal string
-            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            try
+            {
+                // STEP 1: Convert payload to UTF-8 bytes (payload.encode() in Python)
+                byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
+                System.Console.WriteLine($"DEBUG: Payload bytes: {BitConverter.ToString(payloadBytes)}");
+                
+                // STEP 2: Base64 encode those bytes (base64.b64encode() in Python)
+                string base64String = Convert.ToBase64String(payloadBytes);
+                System.Console.WriteLine($"DEBUG: Base64 encoded (string): {base64String}");
+                
+                // STEP 3: Create HMAC with the bytes of the base64 string
+                byte[] base64Bytes = Encoding.ASCII.GetBytes(base64String);
+                System.Console.WriteLine($"DEBUG: Base64 bytes for HMAC: {BitConverter.ToString(base64Bytes)}");
+                
+                // STEP 4: Create HMAC-SHA256 with UTF-8 bytes of the secret key
+                byte[] keyBytes = Encoding.UTF8.GetBytes(_secretKey);
+                System.Console.WriteLine($"DEBUG: Secret key bytes: {BitConverter.ToString(keyBytes)}");
+                
+                // STEP 5: Calculate HMAC
+                using var hmac = new HMACSHA256(keyBytes);
+                byte[] hashBytes = hmac.ComputeHash(base64Bytes);
+                
+                // STEP 6: Convert to lowercase hex string (hexdigest() in Python)
+                string signature = BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+                
+                System.Console.WriteLine($"DEBUG: Generated signature: {signature}");
+                return signature;
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"ERROR in signature generation: {ex.Message}");
+                throw;
+            }
         }
 
         /// <summary>
@@ -150,35 +185,59 @@ namespace AccessGrid
             string payload;
             if ((method == HttpMethod.Post && data == null) || method == HttpMethod.Get)
             {
-                // For these requests, use {"id": "card_id"} as the payload for signature generation
-                if (!string.IsNullOrEmpty(resourceId) && resourceId != "key-cards" && !resourceId.Contains("templates"))
+                // For listing cards endpoint (like what the Python list.py script does)
+                if (method == HttpMethod.Get && endpoint == "/v1/key-cards")
                 {
-                    payload = JsonSerializer.Serialize(new { id = resourceId });
+                    // IMPORTANT: Using exactly the same payload as Python with space after colon
+                    payload = @"{""id"": ""key-cards""}";
+                    System.Console.WriteLine($"DEBUG: Using key-cards payload for signature: {payload}");
+                }
+                // For other requests, use {"id": "card_id"} as the payload for signature generation
+                else if (!string.IsNullOrEmpty(resourceId) && resourceId != "key-cards" && !resourceId.Contains("templates"))
+                {
+                    // Use verbatim string with space after colon to match Python exactly
+                    payload = $@"{{""id"": ""{resourceId}""}}";
+                    System.Console.WriteLine($"DEBUG: Using resource ID payload for signature: {payload}");
                 }
                 else
                 {
                     payload = "{}";
+                    System.Console.WriteLine($"DEBUG: Using empty payload for signature: {payload}");
                 }
             }
             else
             {
                 // For normal POST/PUT/PATCH with body, use the actual payload
                 payload = data != null ? JsonSerializer.Serialize(data, _jsonOptions) : "";
+                System.Console.WriteLine($"DEBUG: Using request body for signature: {payload}");
             }
 
-            // Generate signature
-            var signature = GenerateSignature(payload);
-
-            // Prepare query parameters
-            var finalQueryParams = queryParams ?? new Dictionary<string, string>();
+            // Prepare query parameters before generating signature
+            var finalQueryParams = queryParams != null 
+                ? new Dictionary<string, string>(queryParams) 
+                : new Dictionary<string, string>();
             
-            // For GET requests or POST requests with empty bodies, we need to include the sig_payload parameter
-            if ((method == HttpMethod.Get || (method == HttpMethod.Post && data == null)) && 
-                !string.IsNullOrEmpty(resourceId) && 
-                resourceId != "key-cards" && 
-                !resourceId.Contains("templates"))
+            // Add sig_payload for the listing endpoint specifically
+            if (method == HttpMethod.Get && endpoint == "/v1/key-cards")
             {
-                finalQueryParams["sig_payload"] = JsonSerializer.Serialize(new { id = resourceId });
+                finalQueryParams["sig_payload"] = payload;
+                System.Console.WriteLine($"DEBUG: Adding sig_payload for key-cards: {payload}");
+            }
+                
+            // Generate signature
+            string signature = GenerateSignature(payload);
+            
+            // For GET requests or POST requests with empty bodies that need the sig_payload parameter
+            // Note: We've already added sig_payload for /v1/key-cards endpoint above
+            if ((method == HttpMethod.Get || (method == HttpMethod.Post && data == null)) && !finalQueryParams.ContainsKey("sig_payload"))
+            {
+                if (!string.IsNullOrEmpty(resourceId) && resourceId != "key-cards" && !resourceId.Contains("templates"))
+                {
+                    // For resources that require an ID signature
+                    string idPayload = $@"{{""id"": ""{resourceId}""}}";
+                    finalQueryParams["sig_payload"] = idPayload;
+                    System.Console.WriteLine($"DEBUG: Adding sig_payload: {idPayload}");
+                }
             }
 
             // Build the URL with query parameters
@@ -186,6 +245,7 @@ namespace AccessGrid
             if (finalQueryParams.Count > 0)
             {
                 var queryString = string.Join("&", finalQueryParams.Select(kvp => $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
+                System.Console.WriteLine($"DEBUG: Query string: {queryString}");
                 requestUri += (requestUri.Contains("?") ? "&" : "?") + queryString;
             }
 
@@ -195,7 +255,12 @@ namespace AccessGrid
             // Add headers
             request.Headers.Add("X-ACCT-ID", _accountId);
             request.Headers.Add("X-PAYLOAD-SIG", signature);
-            request.Headers.Add("User-Agent", $"accessgrid.cs @ v{Version}");
+            request.Headers.Add("User-Agent", $"accessgrid.cs/{Version}");
+            
+            System.Console.WriteLine($"DEBUG: Request URL: {_httpClient.BaseAddress}{requestUri}");
+            System.Console.WriteLine($"DEBUG: X-ACCT-ID: {_accountId}");
+            System.Console.WriteLine($"DEBUG: X-PAYLOAD-SIG: {signature}");
+            System.Console.WriteLine($"DEBUG: Payload for signature: {payload}");
 
             // Add content if needed
             if (data != null && method != HttpMethod.Get)
@@ -210,9 +275,12 @@ namespace AccessGrid
             // Process response
             var responseContent = await response.Content.ReadAsStringAsync();
 
+            System.Console.WriteLine($"DEBUG: Response status: {(int)response.StatusCode} {response.StatusCode}");
+            System.Console.WriteLine($"DEBUG: Response content: {responseContent}");
+
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                throw new AuthenticationException("Invalid credentials");
+                throw new AuthenticationException($"Invalid credentials: {responseContent}");
             }
             else if (response.StatusCode == System.Net.HttpStatusCode.PaymentRequired)
             {
