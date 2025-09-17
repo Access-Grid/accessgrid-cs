@@ -19,7 +19,7 @@ namespace AccessGridExample
             }
 
             // Initialize the client
-            var client = new AccessGridClient(accountId, secretKey);
+            using var client = new AccessGridClient(accountId, secretKey);
 
             try
             {

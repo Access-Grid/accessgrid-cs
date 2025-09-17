@@ -13,7 +13,7 @@ namespace AccessGrid
     /// <summary>
     /// Main client for interacting with the AccessGrid API
     /// </summary>
-    public class AccessGridClient
+    public class AccessGridClient : IDisposable
     {
         private readonly HttpClient _httpClient;
         private readonly string _accountId;
@@ -322,5 +322,10 @@ namespace AccessGrid
             }
         }
         #endregion
+
+        public void Dispose()
+        {
+            _httpClient?.Dispose();
+        }
     }
 }
