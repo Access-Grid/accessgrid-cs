@@ -388,8 +388,8 @@ public class EmployeeOnboardingService
 
             var card = await _accessGridClient.AccessCards.ProvisionAsync(provisionRequest);
 
-            _logger.LogInformation("Access card provisioned for employee {EmployeeId}: {CardId}", employee.Id, card.Id);
-
+            _logger.LogInformation("Access card provisioned for employee {employee.Id}: {card.Id}");
+            
             return new OnboardingResult
             {
                 Success = true,
@@ -400,7 +400,7 @@ public class EmployeeOnboardingService
         }
         catch (AccessGridException ex)
         {
-            _logger.LogError(ex, "Failed to provision access card for employee {EmployeeId}", employee.Id);
+            _logger.LogError($"Failed to provision access card for employee {employee.Id}", ex);
             return new OnboardingResult { Success = false, ErrorMessage = ex.Message };
         }
     }
@@ -414,7 +414,7 @@ public class EmployeeOnboardingServiceTests
     {
         // Arrange
         var mockClient = new Mock<IAccessGridClient>();
-        var mockAccessCards = new Mock<AccessCardsService>();
+        var mockApiService = new Mock<IApiService>();
         var mockLogger = new Mock<ILogger<EmployeeOnboardingService>>();
 
         var employee = new Employee
@@ -434,11 +434,12 @@ public class EmployeeOnboardingServiceTests
             Url = "https://install.accessgrid.com/card-123"
         };
 
-        mockAccessCards
-            .Setup(x => x.ProvisionAsync(It.IsAny<ProvisionCardRequest>()))
+        mockApiService
+            .Setup(x => x.PostAsync<AccessCard>("/v1/key-cards", It.IsAny<ProvisionCardRequest>()))
             .ReturnsAsync(expectedCard);
 
-        mockClient.SetupGet(x => x.AccessCards).Returns(mockAccessCards.Object);
+        var accessCardsService = new AccessCardsService(mockApiService.Object);
+        mockClient.SetupGet(x => x.AccessCards).Returns(accessCardsService);
 
         var service = new EmployeeOnboardingService(mockClient.Object, mockLogger.Object);
 
@@ -452,7 +453,7 @@ public class EmployeeOnboardingServiceTests
         Assert.Equal("EMP123", result.EmployeeId);
 
         // Verify the correct request was made
-        mockAccessCards.Verify(x => x.ProvisionAsync(It.Is<ProvisionCardRequest>(req =>
+        mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards", It.Is<ProvisionCardRequest>(req =>
             req.EmployeeId == "EMP123" &&
             req.FullName == "John Smith" &&
             req.Classification == "employee")), Times.Once);
@@ -463,16 +464,17 @@ public class EmployeeOnboardingServiceTests
     {
         // Arrange
         var mockClient = new Mock<IAccessGridClient>();
-        var mockAccessCards = new Mock<AccessCardsService>();
+        var mockApiService = new Mock<IApiService>();
         var mockLogger = new Mock<ILogger<EmployeeOnboardingService>>();
 
         var employee = new Employee { Id = "EMP123", FullName = "John Smith", Email = "john@company.com" };
 
-        mockAccessCards
-            .Setup(x => x.ProvisionAsync(It.IsAny<ProvisionCardRequest>()))
+        mockApiService
+            .Setup(x => x.PostAsync<AccessCard>("/v1/key-cards", It.IsAny<ProvisionCardRequest>()))
             .ThrowsAsync(new AccessGridException("API rate limit exceeded"));
 
-        mockClient.SetupGet(x => x.AccessCards).Returns(mockAccessCards.Object);
+        var accessCardsService = new AccessCardsService(mockApiService.Object);
+        mockClient.SetupGet(x => x.AccessCards).Returns(accessCardsService);
 
         var service = new EmployeeOnboardingService(mockClient.Object, mockLogger.Object);
 
@@ -487,174 +489,172 @@ public class EmployeeOnboardingServiceTests
 }
 ```
 
-### Example 2: Testing Card Management Controller (NUnit)
+### Example 2: Testing Minimal API Web Application (NUnit)
 
-Here's how you might test an ASP.NET Core controller that manages access cards:
+Here's how you might test a modern .NET 8 minimal API application using NUnit:
 
 ```csharp
-// Your controller that uses AccessGrid
-[ApiController]
-[Route("api/[controller]")]
-public class AccessCardsController : ControllerBase
+// Your minimal API application (Program.cs)
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Register AccessGrid client
+builder.Services.AddSingleton<IAccessGridClient>(provider =>
 {
-    private readonly IAccessGridClient _accessGridClient;
-    private readonly ILogger<AccessCardsController> _logger;
+    var accountId = builder.Configuration["AccessGrid:AccountId"];
+    var secretKey = builder.Configuration["AccessGrid:SecretKey"];
+    return new AccessGridClient(accountId, secretKey);
+});
 
-    public AccessCardsController(IAccessGridClient accessGridClient, ILogger<AccessCardsController> logger)
-    {
-        _accessGridClient = accessGridClient;
-        _logger = logger;
-    }
+var app = builder.Build();
 
-    [HttpGet("employee/{employeeId}")]
-    public async Task<IActionResult> GetEmployeeCards(string employeeId)
-    {
-        try
-        {
-            var cards = await _accessGridClient.AccessCards.ListAsync(new ListKeysRequest
-            {
-                TemplateId = "your-template-id",
-                State = "active"
-            });
-
-            var employeeCards = cards.Where(c => c.EmployeeId == employeeId).ToList();
-
-            if (!employeeCards.Any())
-            {
-                return NotFound($"No active cards found for employee {employeeId}");
-            }
-
-            return Ok(employeeCards.Select(c => new
-            {
-                c.Id,
-                c.FullName,
-                c.State,
-                c.ExpirationDate
-            }));
-        }
-        catch (AccessGridException ex)
-        {
-            _logger.LogError(ex, "Failed to retrieve cards for employee {EmployeeId}", employeeId);
-            return StatusCode(500, "Failed to retrieve access cards");
-        }
-    }
-
-    [HttpPost("{cardId}/suspend")]
-    public async Task<IActionResult> SuspendCard(string cardId)
-    {
-        try
-        {
-            var suspendedCard = await _accessGridClient.AccessCards.SuspendAsync(cardId);
-            _logger.LogInformation("Card {CardId} suspended successfully", cardId);
-
-            return Ok(new { cardId = suspendedCard.Id, state = suspendedCard.State });
-        }
-        catch (AccessGridException ex)
-        {
-            _logger.LogError(ex, "Failed to suspend card {CardId}", cardId);
-            return BadRequest($"Failed to suspend card: {ex.Message}");
-        }
-    }
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-// Your test class
-[TestFixture]
-public class AccessCardsControllerTests
+app.UseHttpsRedirection();
+
+// Minimal API endpoints
+app.MapGet("/api/accesscards", async (string templateId, IAccessGridClient accessGridClient) =>
 {
-    private Mock<IAccessGridClient> _mockClient;
-    private Mock<AccessCardsService> _mockAccessCards;
-    private Mock<ILogger<AccessCardsController>> _mockLogger;
-    private AccessCardsController _controller;
+    var cards = await accessGridClient.AccessCards.ListAsync(new ListKeysRequest
+    {
+        TemplateId = templateId,
+        State = "active"
+    });
+
+    return Results.Ok(cards);
+})
+.WithName("GetAccessCards")
+.WithOpenApi();
+
+app.MapPost("/api/accesscards/{cardId}/suspend", async (string cardId, IAccessGridClient accessGridClient) =>
+{
+    var suspendedCard = await accessGridClient.AccessCards.SuspendAsync(cardId);
+    return Results.Ok(suspendedCard);
+})
+.WithName("SuspendCard")
+.WithOpenApi();
+
+app.Run();
+
+// Your test class using NUnit
+[TestFixture]
+public class AccessCardsApiTests
+{
+    private WebApplication _app = null!;
+    private HttpClient _client = null!;
+    private Mock<IAccessGridClient> _mockAccessGridClient = null!;
+    private Mock<IApiService> _mockApiService = null!;
 
     [SetUp]
     public void Setup()
     {
-        _mockClient = new Mock<IAccessGridClient>();
-        _mockAccessCards = new Mock<AccessCardsService>();
-        _mockLogger = new Mock<ILogger<AccessCardsController>>();
+        _mockAccessGridClient = new Mock<IAccessGridClient>();
+        _mockApiService = new Mock<IApiService>();
 
-        _mockClient.SetupGet(x => x.AccessCards).Returns(_mockAccessCards.Object);
-        _controller = new AccessCardsController(_mockClient.Object, _mockLogger.Object);
+        var builder = WebApplication.CreateBuilder();
+        builder.Services.AddEndpointsApiExplorer();
+
+        // Override the AccessGrid client with our mock
+        builder.Services.AddSingleton(_mockAccessGridClient.Object);
+
+        _app = builder.Build();
+
+        // Configure the same endpoints as your main application
+        _app.MapGet("/api/accesscards", async (string templateId, IAccessGridClient accessGridClient) =>
+        {
+            var cards = await accessGridClient.AccessCards.ListAsync(new ListKeysRequest
+            {
+                TemplateId = templateId,
+                State = "active"
+            });
+            return Results.Ok(cards);
+        });
+
+        _app.MapPost("/api/accesscards/{cardId}/suspend", async (string cardId, IAccessGridClient accessGridClient) =>
+        {
+            var suspendedCard = await accessGridClient.AccessCards.SuspendAsync(cardId);
+            return Results.Ok(suspendedCard);
+        });
+
+        _client = new HttpClient();
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _client?.Dispose();
+        _app?.DisposeAsync();
     }
 
     [Test]
-    public async Task GetEmployeeCards_ShouldReturnOk_WhenCardsExist()
+    public async Task GetAccessCards_ShouldReturnOkWithCards_WhenCardsExist()
     {
         // Arrange
-        var cards = new List<AccessCard>
+        var expectedCards = new List<AccessCard>
         {
-            new AccessCard { Id = "card1", EmployeeId = "EMP123", FullName = "John Smith", State = "active" },
-            new AccessCard { Id = "card2", EmployeeId = "EMP456", FullName = "Jane Doe", State = "active" },
-            new AccessCard { Id = "card3", EmployeeId = "EMP123", FullName = "John Smith", State = "active" }
+            new() { Id = "card1", FullName = "John Smith", State = "active" },
+            new() { Id = "card2", FullName = "Jane Doe", State = "active" }
         };
 
-        _mockAccessCards
-            .Setup(x => x.ListAsync(It.IsAny<ListKeysRequest>()))
-            .ReturnsAsync(cards);
+        var keysListResponse = new KeysListResponse { Keys = expectedCards };
+        _mockApiService
+            .Setup(x => x.GetAsync<KeysListResponse>("/v1/key-cards", It.IsAny<Dictionary<string, string>>()))
+            .ReturnsAsync(keysListResponse);
+
+        var accessCardsService = new AccessCardsService(_mockApiService.Object);
+        _mockAccessGridClient.SetupGet(x => x.AccessCards).Returns(accessCardsService);
 
         // Act
-        var result = await _controller.GetEmployeeCards("EMP123");
+        await _app.StartAsync();
+        var response = await _client.GetAsync($"{_app.Urls.First()}/api/accesscards?templateId=test-template");
 
         // Assert
-        Assert.That(result, Is.InstanceOf<OkObjectResult>());
-        var okResult = (OkObjectResult)result;
-        var returnedCards = okResult.Value as IEnumerable<object>;
-        Assert.That(returnedCards.Count(), Is.EqualTo(2)); // Should return 2 cards for EMP123
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+
+        var content = await response.Content.ReadAsStringAsync();
+        var returnedCards = JsonSerializer.Deserialize<List<AccessCard>>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        Assert.That(returnedCards, Is.Not.Null);
+        Assert.That(returnedCards.Count, Is.EqualTo(2));
+        Assert.That(returnedCards[0].FullName, Is.EqualTo("John Smith"));
+
+        _mockApiService.Verify(x => x.GetAsync<KeysListResponse>("/v1/key-cards", It.IsAny<Dictionary<string, string>>()), Times.Once);
     }
 
     [Test]
-    public async Task GetEmployeeCards_ShouldReturnNotFound_WhenNoCardsExist()
+    public async Task SuspendCard_ShouldReturnOkWithSuspendedCard_WhenSuspensionSucceeds()
     {
         // Arrange
-        _mockAccessCards
-            .Setup(x => x.ListAsync(It.IsAny<ListKeysRequest>()))
-            .ReturnsAsync(new List<AccessCard>());
+        var expectedCard = new AccessCard { Id = "card123", State = "suspended" };
+
+        _mockApiService
+            .Setup(x => x.PostAsync<AccessCard>("/v1/key-cards/card123/suspend", null))
+            .ReturnsAsync(expectedCard);
+
+        var accessCardsService = new AccessCardsService(_mockApiService.Object);
+        _mockAccessGridClient.SetupGet(x => x.AccessCards).Returns(accessCardsService);
 
         // Act
-        var result = await _controller.GetEmployeeCards("EMP999");
+        await _app.StartAsync();
+        var response = await _client.PostAsync($"{_app.Urls.First()}/api/accesscards/card123/suspend", null);
 
         // Assert
-        Assert.That(result, Is.InstanceOf<NotFoundObjectResult>());
-        var notFoundResult = (NotFoundObjectResult)result;
-        Assert.That(notFoundResult.Value, Is.EqualTo("No active cards found for employee EMP999"));
-    }
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-    [Test]
-    public async Task SuspendCard_ShouldReturnOk_WhenSuspensionSucceeds()
-    {
-        // Arrange
-        var suspendedCard = new AccessCard { Id = "card123", State = "suspended" };
+        var content = await response.Content.ReadAsStringAsync();
+        var result = JsonSerializer.Deserialize<AccessCard>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-        _mockAccessCards
-            .Setup(x => x.SuspendAsync("card123"))
-            .ReturnsAsync(suspendedCard);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Id, Is.EqualTo("card123"));
+        Assert.That(result.State, Is.EqualTo("suspended"));
 
-        // Act
-        var result = await _controller.SuspendCard("card123");
-
-        // Assert
-        Assert.That(result, Is.InstanceOf<OkObjectResult>());
-        var okResult = (OkObjectResult)result;
-
-        // Verify the correct method was called
-        _mockAccessCards.Verify(x => x.SuspendAsync("card123"), Times.Once);
-    }
-
-    [Test]
-    public async Task SuspendCard_ShouldReturnBadRequest_WhenAccessGridThrowsException()
-    {
-        // Arrange
-        _mockAccessCards
-            .Setup(x => x.SuspendAsync("invalid-card"))
-            .ThrowsAsync(new AccessGridException("Card not found"));
-
-        // Act
-        var result = await _controller.SuspendCard("invalid-card");
-
-        // Assert
-        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-        var badRequestResult = (BadRequestObjectResult)result;
-        Assert.That(badRequestResult.Value, Is.EqualTo("Failed to suspend card: Card not found"));
+        _mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards/card123/suspend", null), Times.Once);
     }
 }
 
