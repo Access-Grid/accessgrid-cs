@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccessGrid", "src\AccessGri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "example\Example.csproj", "{2E6C3D5D-AB91-4F8F-9CE8-D4ECAEC3F2C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccessGridTest", "AccessGridTest\AccessGridTest.csproj", "{68629F90-00D0-4AFA-915B-73A0CD8C510A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,5 +25,9 @@ Global
 		{2E6C3D5D-AB91-4F8F-9CE8-D4ECAEC3F2C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E6C3D5D-AB91-4F8F-9CE8-D4ECAEC3F2C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E6C3D5D-AB91-4F8F-9CE8-D4ECAEC3F2C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68629F90-00D0-4AFA-915B-73A0CD8C510A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68629F90-00D0-4AFA-915B-73A0CD8C510A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68629F90-00D0-4AFA-915B-73A0CD8C510A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68629F90-00D0-4AFA-915B-73A0CD8C510A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -10,7 +10,7 @@ namespace AccessGrid
     {
         private readonly IApiService _apiService;
 
-        internal AccessCardsService(IApiService apiService)
+        public AccessCardsService(IApiService apiService)
         {
             _apiService = apiService;
         }
