@@ -29,8 +29,12 @@ using System;
 var accountId = Environment.GetEnvironmentVariable("ACCESSGRID_ACCOUNT_ID");
 var secretKey = Environment.GetEnvironmentVariable("ACCESSGRID_SECRET_KEY");
 
-// Initialize the client
-var client = new AccessGridClient(accountId, secretKey);
+// Initialize the client (default HTTP client)
+using var client = new AccessGridClient(accountId, secretKey);
+
+// Or with custom HTTP client for testing/mocking
+var httpClient = new HttpClientWrapper(new HttpClient());
+using var client = new AccessGridClient(accountId, secretKey, httpClient);
 ```
 
 ### Listing NFC Keys
@@ -45,7 +49,7 @@ public async Task ListCardsAsync()
     var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
     var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-    var client = new AccessGridClient(accountId, secretKey);
+    using var client = new AccessGridClient(accountId, secretKey);
 
     // Get filtered keys by template
     var templateKeys = await client.AccessCards.ListAsync(new ListKeysRequest
@@ -79,7 +83,7 @@ public async Task ProvisionCardAsync()
     var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
     var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-    var client = new AccessGridClient(accountId, secretKey);
+    using var client = new AccessGridClient(accountId, secretKey);
 
     var card = await client.AccessCards.ProvisionAsync(new ProvisionCardRequest
     {
@@ -112,7 +116,7 @@ public async Task UpdateCardAsync()
    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-   var client = new AccessGridClient(accountId, secretKey);
+   using var client = new AccessGridClient(accountId, secretKey);
 
    await client.AccessCards.UpdateAsync(new UpdateCardRequest
    {
@@ -140,7 +144,7 @@ public async Task SuspendCardAsync()
    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-   var client = new AccessGridClient(accountId, secretKey);
+   using var client = new AccessGridClient(accountId, secretKey);
 
    await client.AccessCards.SuspendAsync("0xc4rd1d");
 
@@ -160,7 +164,7 @@ public async Task ResumeCardAsync()
    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-   var client = new AccessGridClient(accountId, secretKey);
+   using var client = new AccessGridClient(accountId, secretKey);
 
    await client.AccessCards.ResumeAsync("0xc4rd1d");
 
@@ -180,7 +184,7 @@ public async Task UnlinkCardAsync()
    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-   var client = new AccessGridClient(accountId, secretKey);
+   using var client = new AccessGridClient(accountId, secretKey);
 
    await client.AccessCards.UnlinkAsync("0xc4rd1d");
 
@@ -202,7 +206,7 @@ public async Task CreateTemplateAsync()
    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-   var client = new AccessGridClient(accountId, secretKey);
+   using var client = new AccessGridClient(accountId, secretKey);
 
    var template = await client.Console.CreateTemplateAsync(new CreateTemplateRequest
    {
@@ -248,7 +252,7 @@ public async Task UpdateTemplateAsync()
    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-   var client = new AccessGridClient(accountId, secretKey);
+   using var client = new AccessGridClient(accountId, secretKey);
 
    var template = await client.Console.UpdateTemplateAsync(
      new UpdateTemplateRequest
@@ -285,7 +289,7 @@ public async Task ReadTemplateAsync()
    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-   var client = new AccessGridClient(accountId, secretKey);
+   using var client = new AccessGridClient(accountId, secretKey);
 
    var template = await client.Console.ReadTemplateAsync("0xd3adb00b5");
 
@@ -309,7 +313,7 @@ public async Task GetEventLogAsync()
    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
 
-   var client = new AccessGridClient(accountId, secretKey);
+   using var client = new AccessGridClient(accountId, secretKey);
 
    var events = await client.Console.EventLogAsync(
        "0xd3adb00b5",
@@ -327,6 +331,172 @@ public async Task GetEventLogAsync()
    }
 }
 ```
+
+## Testing and Mocking
+
+The AccessGrid SDK is designed to be testable with support for dependency injection and mocking. This allows you to write unit tests without making actual API calls.
+
+### Setting Up Test Dependencies
+
+For testing, you'll need to install a mocking framework. We recommend Moq with either xUnit or NUnit:
+
+```
+Install-Package Moq
+Install-Package Microsoft.NET.Test.Sdk
+
+# For xUnit
+Install-Package xunit
+Install-Package xunit.runner.visualstudio
+
+# For NUnit
+Install-Package NUnit
+Install-Package NUnit3TestAdapter
+```
+
+### Mocking the API Service
+
+The SDK provides the `IApiService` interface which can be easily mocked for testing:
+
+```csharp
+using AccessGrid;
+using Moq;
+using System.Threading.Tasks;
+using Xunit;
+
+public class AccessCardsServiceTests
+{
+    [Fact]
+    public async Task IssueAsync_ShouldReturnAccessCard_WhenRequestIsValid()
+    {
+        // Arrange
+        var mockApiService = new Mock<IApiService>();
+        var expectedCard = new AccessCard
+        {
+            Id = "test-card-id",
+            FullName = "Test User",
+            State = "active"
+        };
+
+        mockApiService
+            .Setup(x => x.PostAsync<AccessCard>("/v1/key-cards", It.IsAny<ProvisionCardRequest>()))
+            .ReturnsAsync(expectedCard);
+
+        var service = new AccessCardsService(mockApiService.Object);
+        var request = new ProvisionCardRequest
+        {
+            CardTemplateId = "template-123",
+            EmployeeId = "emp-456",
+            FullName = "Test User"
+        };
+
+        // Act
+        var result = await service.IssueAsync(request);
+
+        // Assert
+        Assert.Equal(expectedCard.Id, result.Id);
+        Assert.Equal(expectedCard.FullName, result.FullName);
+        mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards", request), Times.Once);
+    }
+}
+```
+
+### Mocking HTTP Client Operations
+
+For more granular control, you can mock the HTTP client wrapper. Here's an example using NUnit:
+
+```csharp
+using AccessGrid;
+using Moq;
+using NUnit;
+using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+
+[TestFixture]
+public class AccessGridClientTests
+{
+    [Test]
+    public async Task GetAsync_ShouldDeserializeResponse_WhenApiReturnsValidJson()
+    {
+        // Arrange
+        var mockHttpClient = new Mock<IHttpClientWrapper>();
+        var jsonResponse = """{"id": "test-id", "name": "Test"}""";
+        var httpResponse = new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(jsonResponse, Encoding.UTF8, "application/json")
+        };
+
+        mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .ReturnsAsync(httpResponse);
+
+        var client = new AccessGridClient("test-account", "test-secret", mockHttpClient.Object);
+
+        // Act
+        var result = await client.GetAsync<TestModel>("/test-endpoint");
+
+        // Assert
+        Assert.That(result.Id, Is.EqualTo("test-id"));
+        Assert.That(result.Name, Is.EqualTo("Test"));
+    }
+
+    public class TestModel
+    {
+        public string Id { get; set; }
+        public string Name { get; set; }
+    }
+}
+```
+
+### Integration Testing with Dependency Injection
+
+You can also use dependency injection containers for integration testing:
+
+```csharp
+using AccessGrid;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using System.Threading.Tasks;
+using Xunit;
+
+public class IntegrationTests
+{
+    [Fact]
+    public async Task ServiceIntegration_ShouldWork_WithDependencyInjection()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        var mockApiService = new Mock<IApiService>();
+
+        // Configure mock behavior
+        mockApiService
+            .Setup(x => x.GetAsync<KeysListResponse>("/v1/key-cards", It.IsAny<Dictionary<string, string>>()))
+            .ReturnsAsync(new KeysListResponse { Keys = new List<AccessCard>() });
+
+        // Register services
+        services.AddSingleton(mockApiService.Object);
+        services.AddTransient<AccessCardsService>();
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Act
+        var cardsService = serviceProvider.GetRequiredService<AccessCardsService>();
+        var result = await cardsService.ListAsync(new ListKeysRequest());
+
+        // Assert
+        Assert.NotNull(result);
+        mockApiService.Verify(x => x.GetAsync<KeysListResponse>("/v1/key-cards", It.IsAny<Dictionary<string, string>>()), Times.Once);
+    }
+}
+```
+
+### Testing Best Practices
+
+1. **Mock at the right level**: Use `IApiService` for testing business logic, `IHttpClientWrapper` for testing HTTP-specific behavior
+2. **Verify interactions**: Use `Verify()` to ensure the correct API endpoints are called
+3. **Test error scenarios**: Mock HTTP errors and API exceptions to test error handling
+4. **Use realistic test data**: Create test data that matches real API responses
 
 ## License
 

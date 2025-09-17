@@ -13,9 +13,9 @@ namespace AccessGrid
     /// <summary>
     /// Main client for interacting with the AccessGrid API
     /// </summary>
-    public class AccessGridClient : IDisposable
+    public class AccessGridClient : IAccessGridClient, IApiService
     {
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientWrapper _httpClient;
         private readonly string _accountId;
         private readonly string _secretKey;
         private readonly JsonSerializerOptions _jsonOptions;
@@ -36,9 +36,10 @@ namespace AccessGrid
         /// </summary>
         /// <param name="accountId">Your AccessGrid account ID</param>
         /// <param name="secretKey">Your AccessGrid secret key</param>
+        /// <param name="httpClient">HTTP client wrapper (optional, creates default if null)</param>
         /// <param name="baseUrl">API base URL (defaults to https://api.accessgrid.com)</param>
         /// <exception cref="ArgumentException">Thrown when account ID or secret key is not provided</exception>
-        public AccessGridClient(string accountId, string secretKey, string baseUrl = "https://api.accessgrid.com")
+        public AccessGridClient(string accountId, string secretKey, IHttpClientWrapper httpClient = null, string baseUrl = "https://api.accessgrid.com")
         {
             if (string.IsNullOrEmpty(accountId))
                 throw new ArgumentException("Account ID is required", nameof(accountId));
@@ -48,11 +49,9 @@ namespace AccessGrid
 
             _accountId = accountId;
             _secretKey = secretKey;
-            
-            _httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(baseUrl.TrimEnd('/'))
-            };
+
+            _httpClient = httpClient ?? new HttpClientWrapper(new HttpClient());
+            _httpClient.BaseAddress = new Uri(baseUrl.TrimEnd('/'));
 
             _jsonOptions = new JsonSerializerOptions
             {
@@ -69,7 +68,7 @@ namespace AccessGrid
         /// <summary>
         /// Makes a GET request to the API
         /// </summary>
-        internal async Task<T> GetAsync<T>(string endpoint, Dictionary<string, string> queryParams = null)
+        public async Task<T> GetAsync<T>(string endpoint, Dictionary<string, string> queryParams = null)
         {
             return await MakeRequestAsync<T>(HttpMethod.Get, endpoint, null, queryParams);
         }
@@ -77,7 +76,7 @@ namespace AccessGrid
         /// <summary>
         /// Makes a POST request to the API
         /// </summary>
-        internal async Task<T> PostAsync<T>(string endpoint, object data)
+        public async Task<T> PostAsync<T>(string endpoint, object data)
         {
             return await MakeRequestAsync<T>(HttpMethod.Post, endpoint, data);
         }
@@ -85,7 +84,7 @@ namespace AccessGrid
         /// <summary>
         /// Makes a PUT request to the API
         /// </summary>
-        internal async Task<T> PutAsync<T>(string endpoint, object data)
+        public async Task<T> PutAsync<T>(string endpoint, object data)
         {
             return await MakeRequestAsync<T>(HttpMethod.Put, endpoint, data);
         }
@@ -93,7 +92,7 @@ namespace AccessGrid
         /// <summary>
         /// Makes a PATCH request to the API
         /// </summary>
-        internal async Task<T> PatchAsync<T>(string endpoint, object data)
+        public async Task<T> PatchAsync<T>(string endpoint, object data)
         {
             return await MakeRequestAsync<T>(new HttpMethod("PATCH"), endpoint, data);
         }
