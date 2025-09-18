@@ -8,11 +8,11 @@ namespace AccessGrid
     /// </summary>
     public class ConsoleService
     {
-        private readonly AccessGridClient _client;
+        private readonly IApiService _apiService;
 
-        internal ConsoleService(AccessGridClient client)
+        internal ConsoleService(IApiService apiService)
         {
-            _client = client;
+            _apiService = apiService;
         }
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace AccessGrid
         /// <returns>Newly created Template</returns>
         public async Task<Template> CreateTemplateAsync(CreateTemplateRequest request)
         {
-            var response = await _client.PostAsync<Template>("/v1/console/card-templates", request);
+            var response = await _apiService.PostAsync<Template>("/v1/console/card-templates", request);
             return response;
         }
 
@@ -33,7 +33,7 @@ namespace AccessGrid
         /// <returns>Updated Template</returns>
         public async Task<Template> UpdateTemplateAsync(UpdateTemplateRequest request)
         {
-            var response = await _client.PutAsync<Template>($"/v1/console/card-templates/{request.CardTemplateId}", request);
+            var response = await _apiService.PutAsync<Template>($"/v1/console/card-templates/{request.CardTemplateId}", request);
             return response;
         }
 
@@ -44,7 +44,7 @@ namespace AccessGrid
         /// <returns>Template details</returns>
         public async Task<Template> ReadTemplateAsync(string templateId)
         {
-            var response = await _client.GetAsync<Template>($"/v1/console/card-templates/{templateId}");
+            var response = await _apiService.GetAsync<Template>($"/v1/console/card-templates/{templateId}");
             return response;
         }
 
@@ -73,7 +73,7 @@ namespace AccessGrid
                     queryParams.Add("event_type", filters.EventType);
             }
 
-            var response = await _client.GetAsync<EventLogResponse>($"/v1/console/card-templates/{templateId}/logs", queryParams);
+            var response = await _apiService.GetAsync<EventLogResponse>($"/v1/console/card-templates/{templateId}/logs", queryParams);
             return response?.Events ?? new List<EventLogEntry>();
         }
     }

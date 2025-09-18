@@ -6,7 +6,7 @@ namespace AccessGridExample
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task Main()
         {
             // Get credentials from environment variables
             var accountId = Environment.GetEnvironmentVariable("ACCESSGRID_ACCOUNT_ID");
@@ -19,7 +19,7 @@ namespace AccessGridExample
             }
 
             // Initialize the client
-            var client = new AccessGridClient(accountId, secretKey);
+            using var client = new AccessGridClient(accountId, secretKey);
 
             try
             {

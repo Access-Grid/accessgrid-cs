@@ -462,7 +462,7 @@ namespace AccessGrid
     /// <summary>
     /// Response wrapper for listing keys
     /// </summary>
-    internal class KeysListResponse
+    public class KeysListResponse
     {
         [JsonPropertyName("keys")]
         public List<AccessCard> Keys { get; set; } = new List<AccessCard>();
@@ -471,7 +471,7 @@ namespace AccessGrid
     /// <summary>
     /// Response wrapper for event logs
     /// </summary>
-    internal class EventLogResponse
+    public class EventLogResponse
     {
         [JsonPropertyName("events")]
         public List<EventLogEntry> Events { get; set; } = new List<EventLogEntry>();

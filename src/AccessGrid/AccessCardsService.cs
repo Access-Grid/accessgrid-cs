@@ -8,11 +8,11 @@ namespace AccessGrid
     /// </summary>
     public class AccessCardsService
     {
-        private readonly AccessGridClient _client;
+        private readonly IApiService _apiService;
 
-        internal AccessCardsService(AccessGridClient client)
+        public AccessCardsService(IApiService apiService)
         {
-            _client = client;
+            _apiService = apiService;
         }
 
         /// <summary>
@@ -22,7 +22,7 @@ namespace AccessGrid
         /// <returns>Newly created AccessCard</returns>
         public async Task<AccessCard> IssueAsync(ProvisionCardRequest request)
         {
-            var response = await _client.PostAsync<AccessCard>("/v1/key-cards", request);
+            var response = await _apiService.PostAsync<AccessCard>("/v1/key-cards", request);
             return response;
         }
 
@@ -43,7 +43,7 @@ namespace AccessGrid
         /// <returns>Updated AccessCard</returns>
         public async Task<AccessCard> UpdateAsync(UpdateCardRequest request)
         {
-            var response = await _client.PatchAsync<AccessCard>($"/v1/key-cards/{request.CardId}", request);
+            var response = await _apiService.PatchAsync<AccessCard>($"/v1/key-cards/{request.CardId}", request);
             return response;
         }
 
@@ -62,13 +62,13 @@ namespace AccessGrid
             if (!string.IsNullOrEmpty(request.State))
                 queryParams.Add("state", request.State);
 
-            var response = await _client.GetAsync<KeysListResponse>("/v1/key-cards", queryParams);
+            var response = await _apiService.GetAsync<KeysListResponse>("/v1/key-cards", queryParams);
             return response?.Keys ?? new List<AccessCard>();
         }
 
         private async Task<AccessCard> ManageAsync(string cardId, string action)
         {
-            var response = await _client.PostAsync<AccessCard>($"/v1/key-cards/{cardId}/{action}", null);
+            var response = await _apiService.PostAsync<AccessCard>($"/v1/key-cards/{cardId}/{action}", null);
             return response;
         }
 
