@@ -6,84 +6,28 @@ namespace AccessGrid
 {
     public class AccessCard
     {
-        [JsonPropertyName("id")]
-        public string Id { get; set; }
+        [JsonConstructor]
+        internal AccessCard(string id, string url, string state, bool? allowOnMultipleDevices)
+        {
+            Id = id;
+            Url = url;
+            State = state;
+            AllowOnMultipleDevices = allowOnMultipleDevices;
+        }
 
+        public AccessCard()
+        {
+        }
+
+        [JsonPropertyName("id")]
+        public string Id { get; private set; }
+        
         [JsonPropertyName("install_url")]
-        public string Url { get; set; }
+        public string Url { get; private set; }
 
         [JsonPropertyName("state")]
-        public string State { get; set; }
+        public string State { get; private set;  }
 
-        [JsonPropertyName("full_name")]
-        public string FullName { get; set; }
-
-        [JsonPropertyName("expiration_date")]
-        public string ExpirationDate { get; set; }
-
-        public override string ToString()
-        {
-            return $"AccessCard(name='{FullName}', id='{Id}', state='{State}')";
-        }
-    }
-
-    public class Template
-    {
-        [JsonPropertyName("id")]
-        public string Id { get; set; }
-
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
-
-        [JsonPropertyName("platform")]
-        public string Platform { get; set; }
-
-        [JsonPropertyName("use_case")]
-        public string UseCase { get; set; }
-
-        [JsonPropertyName("protocol")]
-        public string Protocol { get; set; }
-
-        [JsonPropertyName("created_at")]
-        public string CreatedAt { get; set; }
-
-        [JsonPropertyName("last_published_at")]
-        public string LastPublishedAt { get; set; }
-
-        [JsonPropertyName("issued_keys_count")]
-        public int? IssuedKeysCount { get; set; }
-
-        [JsonPropertyName("active_keys_count")]
-        public int? ActiveKeysCount { get; set; }
-
-        [JsonPropertyName("allowed_device_counts")]
-        public object AllowedDeviceCounts { get; set; }
-
-        [JsonPropertyName("support_settings")]
-        public object SupportSettings { get; set; }
-
-        [JsonPropertyName("terms_settings")]
-        public object TermsSettings { get; set; }
-
-        [JsonPropertyName("style_settings")]
-        public object StyleSettings { get; set; }
-    }
-
-    public class ListKeysRequest
-    {
-        /// <summary>
-        /// Required. The card template ID to list keys for
-        /// </summary>
-        public string TemplateId { get; set; }
-
-        /// <summary>
-        /// Filter keys by state (active, suspended, unlink, deleted)
-        /// </summary>
-        public string State { get; set; }
-    }
-
-    public class ProvisionCardRequest
-    {
         /// <summary>
         /// Unique identifier for the card template to use
         /// </summary>
@@ -202,52 +146,93 @@ namespace AccessGrid
         /// False by default. Set to true if you'd like to enable the NFC keys issued using this template to exist on multiple devices
         /// </summary>
         [JsonPropertyName("allow_on_multiple_devices")]
-        public bool? AllowOnMultipleDevices { get; set; }
+        public bool? AllowOnMultipleDevices { get; private set;}
+
+        public override string ToString()
+        {
+            return $"AccessCard(name='{FullName}', id='{Id}', state='{State}')";
+        }
     }
 
-    public class UpdateCardRequest
+    public class Template
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("platform")]
+        public string Platform { get; set; }
+
+        [JsonPropertyName("use_case")]
+        public string UseCase { get; set; }
+
+        [JsonPropertyName("protocol")]
+        public string Protocol { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public string CreatedAt { get; set; }
+
+        [JsonPropertyName("last_published_at")]
+        public string LastPublishedAt { get; set; }
+
+        [JsonPropertyName("issued_keys_count")]
+        public int? IssuedKeysCount { get; set; }
+
+        [JsonPropertyName("active_keys_count")]
+        public int? ActiveKeysCount { get; set; }
+
+        [JsonPropertyName("allowed_device_counts")]
+        public object AllowedDeviceCounts { get; set; }
+
+        [JsonPropertyName("support_settings")]
+        public object SupportSettings { get; set; }
+
+        [JsonPropertyName("terms_settings")]
+        public object TermsSettings { get; set; }
+
+        [JsonPropertyName("style_settings")]
+        public object StyleSettings { get; set; }
+    }
+
+    public class ListKeysRequest
     {
         /// <summary>
-        /// Unique identifier of the NFC key to update, sent as part of the URL
+        /// Required. The card template ID to list keys for
         /// </summary>
-        [JsonPropertyName("card_id")]
-        public string CardId { get; set; }
+        public string TemplateId { get; set; }
 
         /// <summary>
-        /// Updated unique identifier for the employee
+        /// Filter keys by state (active, suspended, unlink, deleted)
         /// </summary>
-        [JsonPropertyName("employee_id")]
-        public string EmployeeId { get; set; }
+        public string State { get; set; }
+    }
 
-        /// <summary>
-        /// Updated full name of the employee
-        /// </summary>
-        [JsonPropertyName("full_name")]
-        public string FullName { get; set; }
+    public class ProvisionCardRequest : AccessCard
+    {
+        [JsonConstructor]
+        internal ProvisionCardRequest(string id, string url, string state, bool? allowOnMultipleDevices) : base(id, url,
+            state, allowOnMultipleDevices: null)
+        {
+        }
 
-        /// <summary>
-        /// Updated employment classification (e.g., full_time, contractor)
-        /// </summary>
-        [JsonPropertyName("classification")]
-        public string Classification { get; set; }
+        public ProvisionCardRequest() : base()
+        {
+        }
+    }
 
-        /// <summary>
-        /// Updated employee title or role within the organization
-        /// </summary>
-        [JsonPropertyName("title")]
-        public string Title { get; set; }
+    public class UpdateCardRequest : AccessCard
+    {
+        [JsonConstructor]
+        internal UpdateCardRequest(string id, string url, string state, bool? allowOnMultipleDevices) : base(id, url,
+            state, allowOnMultipleDevices: null)
+        {
+        }
 
-        /// <summary>
-        /// Updated ISO8601 timestamp when the card expires
-        /// </summary>
-        [JsonPropertyName("expiration_date")]
-        public DateTime? ExpirationDate { get; set; }
-
-        /// <summary>
-        /// Updated base64 encoded image of the employee
-        /// </summary>
-        [JsonPropertyName("employee_photo")]
-        public string EmployeePhoto { get; set; }
+        public UpdateCardRequest() : base()
+        {
+        }
     }
 
     public class TemplateDesign
