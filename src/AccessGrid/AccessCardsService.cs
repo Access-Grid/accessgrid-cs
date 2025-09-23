@@ -39,11 +39,12 @@ namespace AccessGrid
         /// <summary>
         /// Updates an existing access card
         /// </summary>
-        /// <param name="request">Card update details including CardId</param>
+        /// <param name="cardId">Unique identifier of the NFC key to update</param>
+        /// <param name="request">Card update details</param>
         /// <returns>Updated AccessCard</returns>
-        public async Task<AccessCard> UpdateAsync(UpdateCardRequest request)
+        public async Task<AccessCard> UpdateAsync(string cardId, UpdateCardRequest request)
         {
-            var response = await _apiService.PatchAsync<AccessCard>($"/v1/key-cards/{request.Id}", request);
+            var response = await _apiService.PatchAsync<AccessCard>($"/v1/key-cards/{cardId}", request);
             return response;
         }
 

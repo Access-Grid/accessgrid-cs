@@ -113,9 +113,8 @@ public async Task UpdateCardAsync()
 
    using var client = new AccessGridClient(accountId, secretKey);
 
-   await client.AccessCards.UpdateAsync(new UpdateCardRequest
+   await client.AccessCards.UpdateAsync("OtrykOXjeXSIydM", new UpdateCardRequest
    {
-       CardId = "573087dd976",
        EmployeeId = "987654321",
        FullName = "Updated Employee Name",
        Classification = "contractor",
