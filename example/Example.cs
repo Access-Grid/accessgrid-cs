@@ -11,10 +11,11 @@ namespace AccessGridExample
             // Get credentials from environment variables
             var accountId = Environment.GetEnvironmentVariable("ACCESSGRID_ACCOUNT_ID");
             var secretKey = Environment.GetEnvironmentVariable("ACCESSGRID_SECRET_KEY");
+            var templateId = Environment.GetEnvironmentVariable("ACCESSGRID_TEMPLATE_ID");
 
-            if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(secretKey))
+            if (string.IsNullOrEmpty(accountId) || string.IsNullOrEmpty(secretKey) || string.IsNullOrEmpty(templateId))
             {
-                Console.WriteLine("Please set ACCESSGRID_ACCOUNT_ID and ACCESSGRID_SECRET_KEY environment variables");
+                Console.WriteLine("Please set ACCESSGRID_ACCOUNT_ID, ACCESSGRID_SECRET_KEY and ACCESSGRID_TEMPLATE_ID environment variables");
                 return;
             }
 
@@ -32,7 +33,7 @@ namespace AccessGridExample
                 Console.WriteLine("\nListing access cards...");
                 var cards = await client.AccessCards.ListAsync(new ListKeysRequest
                 {
-                    TemplateId = "573087dd976",
+                    TemplateId = templateId,
                     // No state filter to get all cards
                 });
 
@@ -46,7 +47,7 @@ namespace AccessGridExample
                 Console.WriteLine("\nProvisioning a new card...");
                 var newCard = await client.AccessCards.ProvisionAsync(new ProvisionCardRequest
                 {
-                    CardTemplateId = "573087dd976",
+                    CardTemplateId = templateId,
                     EmployeeId = "101010101",
                     CardNumber = "42069",
                     SiteCode = "42",

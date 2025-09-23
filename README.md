@@ -54,7 +54,7 @@ public async Task ListCardsAsync()
     // Get filtered keys by state
     var activeKeys = await client.AccessCards.ListAsync(new ListKeysRequest
     {
-        TemplateId = "573087dd976",
+        TemplateId = "05d3adb00b5",
         State = "active"
     });
 
@@ -82,7 +82,7 @@ public async Task ProvisionCardAsync()
 
     var card = await client.AccessCards.ProvisionAsync(new ProvisionCardRequest
     {
-        CardTemplateId = "573087dd976",
+        CardTemplateId = "05d3adb00b5",
         EmployeeId = "123456789",
         TagId = "DDEADB33FB00B5",
         FullName = "Employee name",
@@ -113,7 +113,7 @@ public async Task UpdateCardAsync()
 
    using var client = new AccessGridClient(accountId, secretKey);
 
-   await client.AccessCards.UpdateAsync("OtrykOXjeXSIydM", new UpdateCardRequest
+   await client.AccessCards.UpdateAsync("OtrysOXjeXSIyd1", new UpdateCardRequest
    {
        EmployeeId = "987654321",
        FullName = "Updated Employee Name",
@@ -140,7 +140,7 @@ public async Task SuspendCardAsync()
 
    using var client = new AccessGridClient(accountId, secretKey);
 
-   await client.AccessCards.SuspendAsync("573087dd976");
+   await client.AccessCards.SuspendAsync("OtrysOXjeXSIyd1");
 
    Console.WriteLine("Card suspended successfully");
 }
@@ -160,7 +160,7 @@ public async Task ResumeCardAsync()
 
    using var client = new AccessGridClient(accountId, secretKey);
 
-   await client.AccessCards.ResumeAsync("573087dd976");
+   await client.AccessCards.ResumeAsync("OtrysOXjeXSIyd1");
 
    Console.WriteLine("Card resumed successfully");
 }
@@ -180,7 +180,7 @@ public async Task UnlinkCardAsync()
 
    using var client = new AccessGridClient(accountId, secretKey);
 
-   await client.AccessCards.UnlinkAsync("573087dd976");
+   await client.AccessCards.UnlinkAsync("OtrysOXjeXSIyd1");
 
    Console.WriteLine("Card unlinked successfully");
 }
