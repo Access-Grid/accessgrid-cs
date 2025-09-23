@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.0.0
+Install-Package accessgrid -Version 1.0.1
 ```
 
 ## Authentication
@@ -51,22 +51,17 @@ public async Task ListCardsAsync()
 
     using var client = new AccessGridClient(accountId, secretKey);
 
-    // Get filtered keys by template
-    var templateKeys = await client.AccessCards.ListAsync(new ListKeysRequest
-    {
-        TemplateId = "0xd3adb00b5"
-    });
-
     // Get filtered keys by state
     var activeKeys = await client.AccessCards.ListAsync(new ListKeysRequest
     {
+        TemplateId = "05d3adb00b5",
         State = "active"
     });
 
     // Print keys
-    foreach (var key in templateKeys)
+    foreach (var key in activeKeys)
     {
-        Console.WriteLine($"Key ID: {key.Id}, Name: {key.FullName}, State: {key.State}");
+        Console.WriteLine(key);
     }
 }
 ```
@@ -87,16 +82,16 @@ public async Task ProvisionCardAsync()
 
     var card = await client.AccessCards.ProvisionAsync(new ProvisionCardRequest
     {
-        CardTemplateId = "0xd3adb00b5",
+        CardTemplateId = "05d3adb00b5",
         EmployeeId = "123456789",
         TagId = "DDEADB33FB00B5",
-        AllowOnMultipleDevices = true,
         FullName = "Employee name",
         Email = "employee@yourwebsite.com",
         PhoneNumber = "+19547212241",
         Classification = "full_time",
         StartDate = DateTime.UtcNow,
         ExpirationDate = DateTime.Parse("2025-02-22T21:04:03.664Z").ToUniversalTime(),
+        CardNumber = "1252",
         EmployeePhoto = "[image_in_base64_encoded_format]"
     });
 
@@ -118,9 +113,8 @@ public async Task UpdateCardAsync()
 
    using var client = new AccessGridClient(accountId, secretKey);
 
-   await client.AccessCards.UpdateAsync(new UpdateCardRequest
+   await client.AccessCards.UpdateAsync("OtrysOXjeXSIyd1", new UpdateCardRequest
    {
-       CardId = "0xc4rd1d",
        EmployeeId = "987654321",
        FullName = "Updated Employee Name",
        Classification = "contractor",
@@ -146,7 +140,7 @@ public async Task SuspendCardAsync()
 
    using var client = new AccessGridClient(accountId, secretKey);
 
-   await client.AccessCards.SuspendAsync("0xc4rd1d");
+   await client.AccessCards.SuspendAsync("OtrysOXjeXSIyd1");
 
    Console.WriteLine("Card suspended successfully");
 }
@@ -166,7 +160,7 @@ public async Task ResumeCardAsync()
 
    using var client = new AccessGridClient(accountId, secretKey);
 
-   await client.AccessCards.ResumeAsync("0xc4rd1d");
+   await client.AccessCards.ResumeAsync("OtrysOXjeXSIyd1");
 
    Console.WriteLine("Card resumed successfully");
 }
@@ -186,7 +180,7 @@ public async Task UnlinkCardAsync()
 
    using var client = new AccessGridClient(accountId, secretKey);
 
-   await client.AccessCards.UnlinkAsync("0xc4rd1d");
+   await client.AccessCards.UnlinkAsync("OtrysOXjeXSIyd1");
 
    Console.WriteLine("Card unlinked successfully");
 }
