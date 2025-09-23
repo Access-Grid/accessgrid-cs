@@ -43,7 +43,7 @@ namespace AccessGrid
         /// <returns>Updated AccessCard</returns>
         public async Task<AccessCard> UpdateAsync(UpdateCardRequest request)
         {
-            var response = await _apiService.PatchAsync<AccessCard>($"/v1/key-cards/{request.CardId}", request);
+            var response = await _apiService.PatchAsync<AccessCard>($"/v1/key-cards/{request.Id}", request);
             return response;
         }
 

@@ -222,49 +222,17 @@ namespace AccessGrid
         }
     }
 
-    public class UpdateCardRequest
+    public class UpdateCardRequest : AccessCard
     {
-        /// <summary>
-        /// Unique identifier of the NFC key to update, sent as part of the URL
-        /// </summary>
-        [JsonPropertyName("card_id")]
-        public string CardId { get; set; }
+        [JsonConstructor]
+        internal UpdateCardRequest(string id, string url, string state, bool? allowOnMultipleDevices) : base(id, url,
+            state, allowOnMultipleDevices: null)
+        {
+        }
 
-        /// <summary>
-        /// Updated unique identifier for the employee
-        /// </summary>
-        [JsonPropertyName("employee_id")]
-        public string EmployeeId { get; set; }
-
-        /// <summary>
-        /// Updated full name of the employee
-        /// </summary>
-        [JsonPropertyName("full_name")]
-        public string FullName { get; set; }
-
-        /// <summary>
-        /// Updated employment classification (e.g., full_time, contractor)
-        /// </summary>
-        [JsonPropertyName("classification")]
-        public string Classification { get; set; }
-
-        /// <summary>
-        /// Updated employee title or role within the organization
-        /// </summary>
-        [JsonPropertyName("title")]
-        public string Title { get; set; }
-
-        /// <summary>
-        /// Updated ISO8601 timestamp when the card expires
-        /// </summary>
-        [JsonPropertyName("expiration_date")]
-        public DateTime? ExpirationDate { get; set; }
-
-        /// <summary>
-        /// Updated base64 encoded image of the employee
-        /// </summary>
-        [JsonPropertyName("employee_photo")]
-        public string EmployeePhoto { get; set; }
+        public UpdateCardRequest() : base()
+        {
+        }
     }
 
     public class TemplateDesign
