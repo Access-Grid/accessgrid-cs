@@ -7,12 +7,11 @@ namespace AccessGrid
     public class AccessCard
     {
         [JsonConstructor]
-        internal AccessCard(string id, string url, string state, bool? allowOnMultipleDevices)
+        internal AccessCard(string id, string url, string state)
         {
             Id = id;
             Url = url;
             State = state;
-            AllowOnMultipleDevices = allowOnMultipleDevices;
         }
 
         public AccessCard()
@@ -142,12 +141,6 @@ namespace AccessGrid
         [JsonPropertyName("reservations")]
         public object Reservations { get; set; }
 
-        /// <summary>
-        /// False by default. Set to true if you'd like to enable the NFC keys issued using this template to exist on multiple devices
-        /// </summary>
-        [JsonPropertyName("allow_on_multiple_devices")]
-        public bool? AllowOnMultipleDevices { get; private set;}
-
         public override string ToString()
         {
             return $"AccessCard(name='{FullName}', id='{Id}', state='{State}')";
@@ -212,8 +205,8 @@ namespace AccessGrid
     public class ProvisionCardRequest : AccessCard
     {
         [JsonConstructor]
-        internal ProvisionCardRequest(string id, string url, string state, bool? allowOnMultipleDevices) : base(id, url,
-            state, allowOnMultipleDevices: null)
+        internal ProvisionCardRequest(string id, string url, string state) : base(id, url,
+            state)
         {
         }
 
@@ -225,8 +218,8 @@ namespace AccessGrid
     public class UpdateCardRequest : AccessCard
     {
         [JsonConstructor]
-        internal UpdateCardRequest(string id, string url, string state, bool? allowOnMultipleDevices) : base(id, url,
-            state, allowOnMultipleDevices: null)
+        internal UpdateCardRequest(string id, string url, string state) : base(id, url,
+            state)
         {
         }
 
