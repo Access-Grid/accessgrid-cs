@@ -28,12 +28,11 @@ namespace AccessGrid
     public class AccessCard
     {
         [JsonConstructor]
-        internal AccessCard(string id, string url, string state, bool? allowOnMultipleDevices)
+        internal AccessCard(string id, string url, string state)
         {
             Id = id;
             Url = url;
             State = state;
-            AllowOnMultipleDevices = allowOnMultipleDevices;
         }
 
         public AccessCard()
@@ -248,8 +247,8 @@ namespace AccessGrid
     public class ProvisionCardRequest : AccessCard
     {
         [JsonConstructor]
-        internal ProvisionCardRequest(string id, string url, string state, bool? allowOnMultipleDevices) : base(id, url,
-            state, allowOnMultipleDevices: null)
+        internal ProvisionCardRequest(string id, string url, string state) : base(id, url,
+            state)
         {
         }
 
@@ -261,8 +260,8 @@ namespace AccessGrid
     public class UpdateCardRequest : AccessCard
     {
         [JsonConstructor]
-        internal UpdateCardRequest(string id, string url, string state, bool? allowOnMultipleDevices) : base(id, url,
-            state, allowOnMultipleDevices: null)
+        internal UpdateCardRequest(string id, string url, string state) : base(id, url,
+            state)
         {
         }
 
