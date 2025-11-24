@@ -4,6 +4,27 @@ using System.Text.Json.Serialization;
 
 namespace AccessGrid
 {
+    public class Device
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("platform")]
+        public string Platform { get; set; }
+
+        [JsonPropertyName("device_type")]
+        public string DeviceType { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public DateTime? CreatedAt { get; set; }
+
+        [JsonPropertyName("updated_at")]
+        public DateTime? UpdatedAt { get; set; }
+    }
+
     public class AccessCard
     {
         [JsonConstructor]
@@ -147,6 +168,21 @@ namespace AccessGrid
         /// </summary>
         [JsonPropertyName("allow_on_multiple_devices")]
         public bool? AllowOnMultipleDevices { get; private set;}
+
+        [JsonPropertyName("install_url")]
+        public string InstallUrl { get; set; }
+
+        [JsonPropertyName("details")]
+        public object Details { get; set; }
+
+        [JsonPropertyName("direct_install_url")]
+        public string DirectInstallUrl { get; set; }
+
+        [JsonPropertyName("devices")]
+        public List<Device> Devices { get; set; }
+
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
 
         public override string ToString()
         {

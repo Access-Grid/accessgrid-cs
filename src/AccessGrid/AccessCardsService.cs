@@ -37,6 +37,17 @@ namespace AccessGrid
         }
 
         /// <summary>
+        /// Gets details about a specific access card
+        /// </summary>
+        /// <param name="cardId">Unique identifier of the NFC key to retrieve</param>
+        /// <returns>AccessCard details</returns>
+        public async Task<AccessCard> GetAsync(string cardId)
+        {
+            var response = await _apiService.GetAsync<AccessCard>($"/v1/key-cards/{cardId}", null);
+            return response;
+        }
+
+        /// <summary>
         /// Updates an existing access card
         /// </summary>
         /// <param name="cardId">Unique identifier of the NFC key to update</param>
