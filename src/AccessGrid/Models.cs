@@ -168,9 +168,6 @@ namespace AccessGrid
         [JsonPropertyName("allow_on_multiple_devices")]
         public bool? AllowOnMultipleDevices { get; private set;}
 
-        [JsonPropertyName("install_url")]
-        public string InstallUrl { get; set; }
-
         [JsonPropertyName("details")]
         public object Details { get; set; }
 
