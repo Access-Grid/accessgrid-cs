@@ -4,6 +4,32 @@ using System.Text.Json.Serialization;
 
 namespace AccessGrid
 {
+    /// <summary>
+    /// Base type for card issue responses (AccessCard or UnifiedAccessPass)
+    /// </summary>
+    public abstract class Union { }
+
+    /// <summary>
+    /// Represents a unified access pass containing multiple cards (Apple + Android)
+    /// </summary>
+    public class UnifiedAccessPass : Union
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("install_url")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("state")]
+        public string State { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [JsonPropertyName("details")]
+        public List<AccessCard> Details { get; set; }
+    }
+
     public class Device
     {
         [JsonPropertyName("id")]
@@ -25,7 +51,7 @@ namespace AccessGrid
         public DateTime? UpdatedAt { get; set; }
     }
 
-    public class AccessCard
+    public class AccessCard : Union
     {
         [JsonConstructor]
         internal AccessCard(string id, string url, string state)

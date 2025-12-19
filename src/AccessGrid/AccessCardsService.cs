@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace AccessGrid
@@ -16,22 +17,27 @@ namespace AccessGrid
         }
 
         /// <summary>
-        /// Issues a new access card
+        /// Issues a new access card or unified access pass (for template pairs)
         /// </summary>
         /// <param name="request">Card provision details</param>
-        /// <returns>Newly created AccessCard</returns>
-        public async Task<AccessCard> IssueAsync(ProvisionCardRequest request)
+        /// <returns>AccessCard for single card, or UnifiedAccessPass for template pairs</returns>
+        public async Task<Union> IssueAsync(ProvisionCardRequest request)
         {
-            var response = await _apiService.PostAsync<AccessCard>("/v1/key-cards", request);
-            return response;
+            var json = await _apiService.PostAsync<string>("/v1/key-cards", request);
+            var card = JsonSerializer.Deserialize<AccessCard>(json);
+
+            if (card.Details != null)
+                return JsonSerializer.Deserialize<UnifiedAccessPass>(json);
+
+            return card;
         }
 
         /// <summary>
         /// Alias for IssueAsync to maintain backward compatibility
         /// </summary>
         /// <param name="request">Card provision details</param>
-        /// <returns>Newly created AccessCard</returns>
-        public async Task<AccessCard> ProvisionAsync(ProvisionCardRequest request)
+        /// <returns>AccessCard for single card, or UnifiedAccessPass for template pairs</returns>
+        public async Task<Union> ProvisionAsync(ProvisionCardRequest request)
         {
             return await IssueAsync(request);
         }

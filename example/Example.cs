@@ -60,7 +60,10 @@ namespace AccessGridExample
                     ExpirationDate = DateTime.UtcNow.AddYears(1)
                 });
 
-                Console.WriteLine($"Card provisioned successfully. Install URL: {newCard.Url}");
+                if (newCard is AccessCard accessCard)
+                    Console.WriteLine($"Card provisioned successfully. Install URL: {accessCard.Url}");
+                else if (newCard is UnifiedAccessPass unifiedAccessPass)
+                    Console.WriteLine($"Unified pass provisioned successfully. Install URL: {unifiedAccessPass.Url}");
 
                 // // Example 3: Update a card
                 // Console.WriteLine("\nUpdating a card...");

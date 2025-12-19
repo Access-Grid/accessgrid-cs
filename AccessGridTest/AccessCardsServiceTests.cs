@@ -13,11 +13,11 @@ public class AccessCardsServiceTests
     {
         // Arrange
         var mockApiService = new Mock<IApiService>();
-        var expectedCard = new AccessCard("test-card-id", "Test User", "active", null);
+        var jsonResponse = @"{""id"":""test-card-id"",""full_name"":""Test User"",""state"":""active""}";
 
         mockApiService
-            .Setup(x => x.PostAsync<AccessCard>("/v1/key-cards", It.IsAny<ProvisionCardRequest>()))
-            .ReturnsAsync(expectedCard);
+            .Setup(x => x.PostAsync<string>("/v1/key-cards", It.IsAny<ProvisionCardRequest>()))
+            .ReturnsAsync(jsonResponse);
 
         var service = new AccessCardsService(mockApiService.Object);
         var request = new ProvisionCardRequest
@@ -31,8 +31,10 @@ public class AccessCardsServiceTests
         var result = await service.IssueAsync(request);
 
         // Assert
-        Assert.That(result.Id, Is.EqualTo(expectedCard.Id));
-        Assert.That(result.FullName, Is.EqualTo(expectedCard.FullName));
-        mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards", request), Times.Once);
+        Assert.That(result, Is.InstanceOf<AccessCard>());
+        var card = (AccessCard)result;
+        Assert.That(card.Id, Is.EqualTo("test-card-id"));
+        Assert.That(card.FullName, Is.EqualTo("Test User"));
+        mockApiService.Verify(x => x.PostAsync<string>("/v1/key-cards", request), Times.Once);
     }
 }
