@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.0.1
+Install-Package accessgrid -Version 1.1.4
 ```
 
 ## Authentication
@@ -96,6 +96,34 @@ public async Task ProvisionCardAsync()
     });
 
     Console.WriteLine($"Install URL: {card.Url}");
+}
+```
+
+### Getting an NFC Key
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task GetCardAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    var card = await client.AccessCards.GetAsync("0xc4rd1d");
+
+    Console.WriteLine($"Card ID: {card.Id}");
+    Console.WriteLine($"State: {card.State}");
+    Console.WriteLine($"Full Name: {card.FullName}");
+    Console.WriteLine($"Install URL: {card.InstallUrl}");
+    Console.WriteLine($"Expiration Date: {card.ExpirationDate}");
+    Console.WriteLine($"Card Number: {card.CardNumber}");
+    Console.WriteLine($"Site Code: {card.SiteCode}");
+    Console.WriteLine($"Devices: {card.Devices.Count}");
+    Console.WriteLine($"Metadata: {card.Metadata}");
 }
 ```
 

@@ -4,15 +4,61 @@ using System.Text.Json.Serialization;
 
 namespace AccessGrid
 {
-    public class AccessCard
+    /// <summary>
+    /// Base type for card issue responses (AccessCard or UnifiedAccessPass)
+    /// </summary>
+    public abstract class Union { }
+
+    /// <summary>
+    /// Represents a unified access pass containing multiple cards (Apple + Android)
+    /// </summary>
+    public class UnifiedAccessPass : Union
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("install_url")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("state")]
+        public string State { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [JsonPropertyName("details")]
+        public List<AccessCard> Details { get; set; }
+    }
+
+    public class Device
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("platform")]
+        public string Platform { get; set; }
+
+        [JsonPropertyName("device_type")]
+        public string DeviceType { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public DateTime? CreatedAt { get; set; }
+
+        [JsonPropertyName("updated_at")]
+        public DateTime? UpdatedAt { get; set; }
+    }
+
+    public class AccessCard : Union
     {
         [JsonConstructor]
-        internal AccessCard(string id, string url, string state, bool? allowOnMultipleDevices)
+        internal AccessCard(string id, string url, string state)
         {
             Id = id;
             Url = url;
             State = state;
-            AllowOnMultipleDevices = allowOnMultipleDevices;
         }
 
         public AccessCard()
@@ -148,6 +194,18 @@ namespace AccessGrid
         [JsonPropertyName("allow_on_multiple_devices")]
         public bool? AllowOnMultipleDevices { get; private set;}
 
+        [JsonPropertyName("details")]
+        public object Details { get; set; }
+
+        [JsonPropertyName("direct_install_url")]
+        public string DirectInstallUrl { get; set; }
+
+        [JsonPropertyName("devices")]
+        public List<Device> Devices { get; set; }
+
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
+
         public override string ToString()
         {
             return $"AccessCard(name='{FullName}', id='{Id}', state='{State}')";
@@ -212,8 +270,8 @@ namespace AccessGrid
     public class ProvisionCardRequest : AccessCard
     {
         [JsonConstructor]
-        internal ProvisionCardRequest(string id, string url, string state, bool? allowOnMultipleDevices) : base(id, url,
-            state, allowOnMultipleDevices: null)
+        internal ProvisionCardRequest(string id, string url, string state) : base(id, url,
+            state)
         {
         }
 
@@ -225,8 +283,8 @@ namespace AccessGrid
     public class UpdateCardRequest : AccessCard
     {
         [JsonConstructor]
-        internal UpdateCardRequest(string id, string url, string state, bool? allowOnMultipleDevices) : base(id, url,
-            state, allowOnMultipleDevices: null)
+        internal UpdateCardRequest(string id, string url, string state) : base(id, url,
+            state)
         {
         }
 
