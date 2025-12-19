@@ -13,7 +13,7 @@ public class AccessCardsServiceTests
     {
         // Arrange
         var mockApiService = new Mock<IApiService>();
-        var expectedCard = new AccessCard("test-card-id", "Test User", "active", null);
+        var expectedCard = new AccessCard("test-card-id", "Test User", AccessPassState.Active);
 
         mockApiService
             .Setup(x => x.PostAsync<AccessCard>("/v1/key-cards", It.IsAny<ProvisionCardRequest>()))

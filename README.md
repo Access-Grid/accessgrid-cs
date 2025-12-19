@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.1.3
+Install-Package accessgrid -Version 1.1.4
 ```
 
 ## Authentication

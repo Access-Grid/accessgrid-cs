@@ -10,13 +10,13 @@ namespace AccessGrid
         public string Id { get; set; }
 
         [JsonPropertyName("platform")]
-        public string Platform { get; set; }
+        public Platform Platform { get; set; }
 
         [JsonPropertyName("device_type")]
-        public string DeviceType { get; set; }
+        public DeviceType DeviceType { get; set; }
 
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public DeviceStatus Status { get; set; }
 
         [JsonPropertyName("created_at")]
         public DateTime? CreatedAt { get; set; }
@@ -28,7 +28,7 @@ namespace AccessGrid
     public class AccessCard
     {
         [JsonConstructor]
-        internal AccessCard(string id, string url, string state)
+        internal AccessCard(string id, string url, AccessPassState state)
         {
             Id = id;
             Url = url;
@@ -46,7 +46,7 @@ namespace AccessGrid
         public string Url { get; private set; }
 
         [JsonPropertyName("state")]
-        public string State { get; private set;  }
+        public AccessPassState State { get; private set;  }
 
         /// <summary>
         /// Unique identifier for the card template to use
@@ -169,7 +169,7 @@ namespace AccessGrid
         public bool? AllowOnMultipleDevices { get; private set;}
 
         [JsonPropertyName("details")]
-        public object Details { get; set; }
+        public IReadOnlyList<AccessCard> Details { get; set; }
 
         [JsonPropertyName("direct_install_url")]
         public string DirectInstallUrl { get; set; }
@@ -244,7 +244,7 @@ namespace AccessGrid
     public class ProvisionCardRequest : AccessCard
     {
         [JsonConstructor]
-        internal ProvisionCardRequest(string id, string url, string state) : base(id, url,
+        internal ProvisionCardRequest(string id, string url, AccessPassState state) : base(id, url,
             state)
         {
         }
@@ -257,7 +257,7 @@ namespace AccessGrid
     public class UpdateCardRequest : AccessCard
     {
         [JsonConstructor]
-        internal UpdateCardRequest(string id, string url, string state) : base(id, url,
+        internal UpdateCardRequest(string id, string url, AccessPassState state) : base(id, url,
             state)
         {
         }
@@ -351,7 +351,7 @@ namespace AccessGrid
         /// Must be one of `apple` or `google`
         /// </summary>
         [JsonPropertyName("platform")]
-        public string Platform { get; set; }
+        public Platform Platform { get; set; }
 
         /// <summary>
         /// Must be `employee_badge`
@@ -363,7 +363,7 @@ namespace AccessGrid
         /// Must be `desfire` or `seos` - HID Seos only available for enterprise customers
         /// </summary>
         [JsonPropertyName("protocol")]
-        public string Protocol { get; set; }
+        public Protocol Protocol { get; set; }
 
         /// <summary>
         /// False by default. Set to true if you'd like to enable the NFC keys issued using this template to exist on multiple devices (think phone and watch)
@@ -492,5 +492,155 @@ namespace AccessGrid
     {
         [JsonPropertyName("events")]
         public List<EventLogEntry> Events { get; set; } = new List<EventLogEntry>();
+    }
+
+    /// <summary>
+    /// The CloudEvents data of an access pass webhook event
+    /// </summary>
+    public class AccessPassEvent
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("card_template_id")]
+        public string CardTemplateId { get; set; }
+
+        [JsonPropertyName("state")]
+        public AccessPassState? State { get; set; }
+
+        [JsonPropertyName("full_name")]
+        public string? FullName { get; set; }
+
+        [JsonPropertyName("employee_id")]
+        public string? EmployeeId { get; set; }
+
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+
+        [JsonPropertyName("start_date")]
+        public DateTimeOffset? StartDate { get; set; }
+
+        [JsonPropertyName("expiration_date")]
+        public DateTimeOffset? ExpirationDate { get; set; }
+
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object>? Metadata { get; set; }
+
+        [JsonPropertyName("hid_org_id")]
+        public string? HIDOrgId { get; set; }
+
+        [JsonPropertyName("card_templates")]
+        public IReadOnlyList<AccessPassEventCardTemplate>? CardTemplates { get; set; }
+
+        [JsonPropertyName("details")]
+        public AccessPassEventDetails? Details { get; set; }
+
+        [JsonPropertyName("devices")]
+        public IReadOnlyList<AccessPassEventDevice>? Devices { get; set; }
+
+        public class AccessPassEventDetails
+        {
+            [JsonPropertyName("id")]
+            public string Id { get; set; }
+
+            [JsonPropertyName("card_template_id")]
+            public string CardTemplateId { get; set; }
+
+            [JsonPropertyName("platform")]
+            public Platform Platform { get; set; }
+
+            [JsonPropertyName("protocol")]
+            public Protocol Protocol { get; set; }
+
+            [JsonPropertyName("status")]
+            public string Status { get; set; }
+
+            [JsonPropertyName("card_number")]
+            public string? CardNumber { get; set; }
+
+            [JsonPropertyName("site_code")]
+            public string? SiteCode { get; set; }
+        }
+
+        public class AccessPassEventCardTemplate
+        {
+            [JsonPropertyName("id")]
+            public string Id { get; set; }
+
+            [JsonPropertyName("platform")]
+            public Platform Platform { get; set; }
+
+            [JsonPropertyName("protocol")]
+            public Protocol Protocol { get; set; }
+
+            [JsonPropertyName("name")]
+            public string? Name { get; set; }
+
+            [JsonPropertyName("metadata")]
+            public Dictionary<string, object>? Metadata { get; set; }
+
+            [JsonPropertyName("hid_org_id")]
+            public string? HIDOrgId { get; set; }
+        }
+
+        public class AccessPassEventDevice
+        {
+            [JsonPropertyName("id")]
+            public string Id { get; set; }
+
+            [JsonPropertyName("card_template_id")]
+            public string CardTemplateId { get; set; }
+
+            [JsonPropertyName("platform")]
+            public Platform Platform { get; set; }
+
+            [JsonPropertyName("type")]
+            public DeviceType Type { get; set; }
+
+            [JsonPropertyName("protocol")]
+            public Protocol Protocol { get; set; }
+
+            [JsonPropertyName("status")]
+            public DeviceStatus Status { get; set; }
+
+            [JsonPropertyName("card_number")]
+            public string? CardNumber { get; set; }
+
+            [JsonPropertyName("site_code")]
+            public string? SiteCode { get; set; }
+        }
+    }
+
+    /// <summary>
+    /// The CloudEvents data of a credential profile webhook event
+    /// </summary>
+    public class CredentialProfileEvent
+    {
+        [JsonPropertyName("credential_profile_id")]
+        string Id { get; set; }
+    }
+
+    /// <summary>
+    /// The CloudEvents data of a card template webhook event
+    /// </summary>
+    public class  CardTemplateEvent
+    {
+        [JsonPropertyName("card_template_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("platform")]
+        public Platform Platform { get; set; }
+
+        [JsonPropertyName("protocol")]
+        public Protocol Protocol { get; set; }
+
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object>? Metadata { get; set; }
+
+        [JsonPropertyName("hid_org_id")]
+        public string HIDOrgId { get; set; }
     }
 }
