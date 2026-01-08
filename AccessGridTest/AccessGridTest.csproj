@@ -1,14 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>../sgKey.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.4">
           <PrivateAssets>all</PrivateAssets>
@@ -24,9 +23,7 @@
         </PackageReference>
         <PackageReference Include="NUnit3TestAdapter" Version="5.1.0" />
     </ItemGroup>
-
     <ItemGroup>
       <ProjectReference Include="..\src\AccessGrid.csproj" />
     </ItemGroup>
-
 </Project>

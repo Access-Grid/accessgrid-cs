@@ -79,6 +79,12 @@ namespace AccessGrid
         public string CardNumber { get; set; }
 
         /// <summary>
+        /// Optional credential pool ID to use for automatic credential assignment. When provided, the system will automatically assign site_code and card_number from the pool.
+        /// </summary>
+        [JsonPropertyName("credential_pool_id")]
+        public string CredentialPoolId { get; set; }
+
+        /// <summary>
         /// Up to 8192 bytes of data. Only used when using your own proprietary data format
         /// </summary>
         [JsonPropertyName("file_data")]

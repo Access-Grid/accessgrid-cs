@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <PackageId>accessgrid</PackageId>
-    <Version>1.1.4</Version>
+    <Version>1.1.5</Version>
     <Authors>AccessGrid</Authors>
     <Company>AccessGrid</Company>
     <Description>Official C# SDK for the AccessGrid API</Description>
@@ -26,8 +26,13 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
-      <_Parameter1>AccessGridTest</_Parameter1>
+      <_Parameter1>AccessGridTest, PublicKey=00240000048000009400000006020000002400005253413100040000010001003f82670a409d95cb2e9436c696be46cbe2893c8ba867070a3969ce4bc27950c402ab221c4f6c28f69913a93621b014851851ec667548e43f7b6369ec33161868354c87469186aed86aa76756b4db5e5fb5110dd321e8c872932ca6ce77cd2f4819f00393bb5ed28f34b8d620679429a7bbd6105a8c7609af732895f74904a288</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>../sgKey.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
 
 </Project>
