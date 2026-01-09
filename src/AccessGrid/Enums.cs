@@ -44,7 +44,7 @@ namespace AccessGrid
 
     public enum DeviceStatus
     {
-        [JsonStringEnumMemberName("CredentialsCreated")]
+        [JsonStringEnumMemberName("credentials_created")]
         CredentialsCreated = 1,
 
         [JsonStringEnumMemberName("bundle_delivered")]
@@ -53,8 +53,8 @@ namespace AccessGrid
         [JsonStringEnumMemberName("installed")]
         Installed = 3,
 
-        [JsonStringEnumMemberName("unintstalled")]
-        Unintstalled = 4,
+        [JsonStringEnumMemberName("uninstalled")]
+        Uninstalled = 4,
 
         [JsonStringEnumMemberName("suspended")]
         Suspended = 5
