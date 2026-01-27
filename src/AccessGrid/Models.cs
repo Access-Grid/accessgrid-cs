@@ -28,7 +28,7 @@ namespace AccessGrid
     public class AccessCard
     {
         [JsonConstructor]
-        internal AccessCard(string id, string url, AccessPassState state)
+        internal AccessCard(string id, string url, AccessPassState? state)
         {
             Id = id;
             Url = url;
@@ -46,7 +46,7 @@ namespace AccessGrid
         public string Url { get; private set; }
 
         [JsonPropertyName("state")]
-        public AccessPassState State { get; private set;  }
+        public AccessPassState? State { get; private set;  }
 
         /// <summary>
         /// Unique identifier for the card template to use
