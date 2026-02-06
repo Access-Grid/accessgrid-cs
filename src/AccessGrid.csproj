@@ -30,7 +30,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<SignAssembly>true</SignAssembly>
+		<SignAssembly>False</SignAssembly>
 		<AssemblyOriginatorKeyFile>../sgKey.snk</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
