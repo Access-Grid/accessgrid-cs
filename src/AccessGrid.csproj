@@ -31,7 +31,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <SignAssembly>True</SignAssembly>
+    <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>../sgKey.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
