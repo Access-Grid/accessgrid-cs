@@ -614,6 +614,9 @@ namespace AccessGrid
 
             [JsonPropertyName("site_code")]
             public string? SiteCode { get; set; }
+
+            [JsonPropertyName("file_data")]
+            public string? FileData { get; set; }
         }
     }
 
