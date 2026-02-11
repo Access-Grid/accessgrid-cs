@@ -652,4 +652,70 @@ namespace AccessGrid
         [JsonPropertyName("hid_org_id")]
         public string HIDOrgId { get; set; }
     }
+
+    /// <summary>
+    /// Basic template information
+    /// </summary>
+    public class TemplateInfo
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("platform")]
+        public string Platform { get; set; }
+    }
+
+    /// <summary>
+    /// Represents a pair of iOS and Android templates
+    /// </summary>
+    public class PassTemplatePair
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public DateTime? CreatedAt { get; set; }
+
+        [JsonPropertyName("android_template")]
+        public TemplateInfo AndroidTemplate { get; set; }
+
+        [JsonPropertyName("ios_template")]
+        public TemplateInfo IosTemplate { get; set; }
+    }
+
+    /// <summary>
+    /// Response from listing pass template pairs
+    /// </summary>
+    public class ListPassTemplatePairsResponse
+    {
+        [JsonPropertyName("pass_template_pairs")]
+        public List<PassTemplatePair> PassTemplatePairs { get; set; }
+
+        [JsonPropertyName("pagination")]
+        public PaginationInfo Pagination { get; set; }
+    }
+
+    /// <summary>
+    /// Pagination information
+    /// </summary>
+    public class PaginationInfo
+    {
+        [JsonPropertyName("current_page")]
+        public int CurrentPage { get; set; }
+
+        [JsonPropertyName("per_page")]
+        public int PerPage { get; set; }
+
+        [JsonPropertyName("total_pages")]
+        public int TotalPages { get; set; }
+
+        [JsonPropertyName("total_count")]
+        public int TotalCount { get; set; }
+    }
 }

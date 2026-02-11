@@ -76,5 +76,25 @@ namespace AccessGrid
             var response = await _apiService.GetAsync<EventLogResponse>($"/v1/console/card-templates/{templateId}/logs", queryParams);
             return response?.Events ?? new List<EventLogEntry>();
         }
+
+        /// <summary>
+        /// Lists pass template pairs with pagination support (enterprise only)
+        /// </summary>
+        /// <param name="page">Page number for pagination (default: 1)</param>
+        /// <param name="perPage">Number of results per page (default: 50, max: 100)</param>
+        /// <returns>Paginated list of pass template pairs</returns>
+        public async Task<ListPassTemplatePairsResponse> ListPassTemplatePairsAsync(int? page = null, int? perPage = null)
+        {
+            var queryParams = new Dictionary<string, string>();
+
+            if (page.HasValue)
+                queryParams.Add("page", page.Value.ToString());
+
+            if (perPage.HasValue)
+                queryParams.Add("per_page", perPage.Value.ToString());
+
+            var response = await _apiService.GetAsync<ListPassTemplatePairsResponse>("/v1/console/pass-template-pairs", queryParams);
+            return response;
+        }
     }
 }
