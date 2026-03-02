@@ -519,6 +519,54 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// Lightweight template reference within a pass template pair
+    /// </summary>
+    public class PassTemplatePairInfo
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("platform")]
+        public string Platform { get; set; }
+    }
+
+    /// <summary>
+    /// A paired iOS/Android pass template configuration
+    /// </summary>
+    public class PassTemplatePair
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public string CreatedAt { get; set; }
+
+        [JsonPropertyName("android_template")]
+        public PassTemplatePairInfo AndroidTemplate { get; set; }
+
+        [JsonPropertyName("ios_template")]
+        public PassTemplatePairInfo IosTemplate { get; set; }
+    }
+
+    /// <summary>
+    /// Response wrapper for listing pass template pairs
+    /// </summary>
+    public class PassTemplatePairsResponse
+    {
+        [JsonPropertyName("pass_template_pairs")]
+        public List<PassTemplatePair> PassTemplatePairs { get; set; } = new List<PassTemplatePair>();
+
+        [JsonPropertyName("pagination")]
+        public PaginationInfo Pagination { get; set; }
+    }
+
+    /// <summary>
     /// The CloudEvents data of an access pass webhook event
     /// </summary>
     public class AccessPassEvent
