@@ -501,6 +501,24 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// Pagination metadata returned by paginated API endpoints
+    /// </summary>
+    public class PaginationInfo
+    {
+        [JsonPropertyName("current_page")]
+        public int CurrentPage { get; set; }
+
+        [JsonPropertyName("per_page")]
+        public int PerPage { get; set; }
+
+        [JsonPropertyName("total_pages")]
+        public int TotalPages { get; set; }
+
+        [JsonPropertyName("total_count")]
+        public int TotalCount { get; set; }
+    }
+
+    /// <summary>
     /// The CloudEvents data of an access pass webhook event
     /// </summary>
     public class AccessPassEvent
