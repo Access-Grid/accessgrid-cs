@@ -57,4 +57,30 @@ public class AccessCardsServiceTests
         Assert.That(result.State, Is.EqualTo(AccessPassState.Active));
         mockApiService.Verify(x => x.GetAsync<AccessCard>("/v1/key-cards/card-123", null), Times.Once);
     }
+
+    [Test]
+    public async Task UpdateAsync_ShouldPatchAndReturnAccessCard()
+    {
+        // Arrange
+        var mockApiService = new Mock<IApiService>();
+        var expectedCard = new AccessCard("card-456", "https://example.com/install", AccessPassState.Active);
+
+        mockApiService
+            .Setup(x => x.PatchAsync<AccessCard>("/v1/key-cards/card-456", It.IsAny<UpdateCardRequest>()))
+            .ReturnsAsync(expectedCard);
+
+        var service = new AccessCardsService(mockApiService.Object);
+        var request = new UpdateCardRequest
+        {
+            FullName = "Updated Name",
+            Classification = "contractor"
+        };
+
+        // Act
+        var result = await service.UpdateAsync("card-456", request);
+
+        // Assert
+        Assert.That(result.Id, Is.EqualTo("card-456"));
+        mockApiService.Verify(x => x.PatchAsync<AccessCard>("/v1/key-cards/card-456", request), Times.Once);
+    }
 }
