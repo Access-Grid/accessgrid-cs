@@ -83,4 +83,25 @@ public class AccessCardsServiceTests
         Assert.That(result.Id, Is.EqualTo("card-456"));
         mockApiService.Verify(x => x.PatchAsync<AccessCard>("/v1/key-cards/card-456", request), Times.Once);
     }
+
+    [Test]
+    public async Task SuspendAsync_ShouldPostToCorrectEndpoint()
+    {
+        // Arrange
+        var mockApiService = new Mock<IApiService>();
+        var expectedCard = new AccessCard("card-789", null, AccessPassState.Suspended);
+
+        mockApiService
+            .Setup(x => x.PostAsync<AccessCard>("/v1/key-cards/card-789/suspend", null))
+            .ReturnsAsync(expectedCard);
+
+        var service = new AccessCardsService(mockApiService.Object);
+
+        // Act
+        var result = await service.SuspendAsync("card-789");
+
+        // Assert
+        Assert.That(result.State, Is.EqualTo(AccessPassState.Suspended));
+        mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards/card-789/suspend", null), Times.Once);
+    }
 }
