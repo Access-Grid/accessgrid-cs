@@ -151,6 +151,203 @@ public class ConsoleServiceTests
         )), Times.Once);
     }
 
+    #region CreateTemplateAsync
+
+    [Test]
+    public async Task CreateTemplateAsync_ShouldPostAndReturnTemplate()
+    {
+        var json = """
+        {
+            "id": "tmpl-new",
+            "name": "Employee NFC Key",
+            "platform": "apple",
+            "use_case": "employee_badge",
+            "protocol": "desfire",
+            "created_at": "2025-03-01T00:00:00Z",
+            "issued_keys_count": 0,
+            "active_keys_count": 0
+        }
+        """;
+        StubHttpResponse(json);
+
+        var request = new CreateTemplateRequest
+        {
+            Name = "Employee NFC Key",
+            Platform = Platform.Apple,
+            UseCase = "employee_badge",
+            Protocol = Protocol.DESFire,
+            AllowOnMultipleDevices = true,
+            WatchCount = 2,
+            IPhoneCount = 3
+        };
+
+        var result = await _client.Console.CreateTemplateAsync(request);
+
+        Assert.That(result.Id, Is.EqualTo("tmpl-new"));
+        Assert.That(result.Name, Is.EqualTo("Employee NFC Key"));
+        Assert.That(result.Platform, Is.EqualTo("apple"));
+        Assert.That(result.UseCase, Is.EqualTo("employee_badge"));
+        Assert.That(result.Protocol, Is.EqualTo("desfire"));
+        Assert.That(result.IssuedKeysCount, Is.EqualTo(0));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates")
+        )), Times.Once);
+    }
+
+    #endregion
+
+    #region UpdateTemplateAsync
+
+    [Test]
+    public async Task UpdateTemplateAsync_ShouldPutAndReturnTemplate()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Updated Badge",
+            "platform": "apple",
+            "use_case": "employee_badge",
+            "protocol": "desfire"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var request = new UpdateTemplateRequest
+        {
+            CardTemplateId = "tmpl-123",
+            Name = "Updated Badge",
+            AllowOnMultipleDevices = false,
+            WatchCount = 1,
+            IPhoneCount = 2
+        };
+
+        var result = await _client.Console.UpdateTemplateAsync(request);
+
+        Assert.That(result.Id, Is.EqualTo("tmpl-123"));
+        Assert.That(result.Name, Is.EqualTo("Updated Badge"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Put &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-123")
+        )), Times.Once);
+    }
+
+    #endregion
+
+    #region ReadTemplateAsync
+
+    [Test]
+    public async Task ReadTemplateAsync_ShouldGetAndReturnTemplate()
+    {
+        var json = """
+        {
+            "id": "tmpl-456",
+            "name": "Visitor Pass",
+            "platform": "google",
+            "use_case": "employee_badge",
+            "protocol": "desfire",
+            "created_at": "2025-01-15T00:00:00Z",
+            "last_published_at": "2025-02-01T00:00:00Z",
+            "issued_keys_count": 42,
+            "active_keys_count": 38
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.ReadTemplateAsync("tmpl-456");
+
+        Assert.That(result.Id, Is.EqualTo("tmpl-456"));
+        Assert.That(result.Name, Is.EqualTo("Visitor Pass"));
+        Assert.That(result.Platform, Is.EqualTo("google"));
+        Assert.That(result.CreatedAt, Is.EqualTo("2025-01-15T00:00:00Z"));
+        Assert.That(result.LastPublishedAt, Is.EqualTo("2025-02-01T00:00:00Z"));
+        Assert.That(result.IssuedKeysCount, Is.EqualTo(42));
+        Assert.That(result.ActiveKeysCount, Is.EqualTo(38));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Get &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-456")
+        )), Times.Once);
+    }
+
+    #endregion
+
+    #region EventLogAsync
+
+    [Test]
+    public async Task EventLogAsync_ShouldReturnEventLogEntries()
+    {
+        var json = """
+        {
+            "events": [
+                { "type": "install", "timestamp": "2025-03-01T10:00:00Z", "user_id": "user-1" },
+                { "type": "suspend", "timestamp": "2025-03-02T14:00:00Z", "user_id": "user-2" }
+            ]
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.EventLogAsync("tmpl-789");
+
+        Assert.That(result, Has.Count.EqualTo(2));
+        Assert.That(result[0].Type, Is.EqualTo("install"));
+        Assert.That(result[0].UserId, Is.EqualTo("user-1"));
+        Assert.That(result[1].Type, Is.EqualTo("suspend"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Get &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-789/logs")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task EventLogAsync_ShouldPassFilters()
+    {
+        var json = """
+        {
+            "events": []
+        }
+        """;
+        StubHttpResponse(json);
+
+        var filters = new EventLogFilters
+        {
+            Device = "mobile",
+            StartDate = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            EndDate = new DateTime(2025, 6, 30, 0, 0, 0, DateTimeKind.Utc),
+            EventType = "install"
+        };
+
+        await _client.Console.EventLogAsync("tmpl-789", filters);
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Get &&
+            req.RequestUri!.ToString().Contains("device=mobile") &&
+            req.RequestUri!.ToString().Contains("start_date=") &&
+            req.RequestUri!.ToString().Contains("end_date=") &&
+            req.RequestUri!.ToString().Contains("event_type=install")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task EventLogAsync_ShouldHandleEmptyResponse()
+    {
+        var json = """
+        {
+            "events": []
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.EventLogAsync("tmpl-789");
+
+        Assert.That(result, Is.Empty);
+    }
+
+    #endregion
+
     #region GetLedgerItemsAsync
 
     [Test]
