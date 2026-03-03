@@ -354,6 +354,37 @@ public async Task GetEventLogAsync()
 }
 ```
 
+### Listing Pass Template Pairs
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task ListPassTemplatePairsAsync()
+{
+   var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+   var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+   using var client = new AccessGridClient(accountId, secretKey);
+
+   // List first page with default page size (50)
+   var result = await client.Console.ListPassTemplatePairsAsync();
+
+   foreach (var pair in result.PassTemplatePairs)
+   {
+       Console.WriteLine($"Pair: {pair.Name} ({pair.Id})");
+       Console.WriteLine($"  iOS: {pair.IosTemplate?.Name ?? "none"}");
+       Console.WriteLine($"  Android: {pair.AndroidTemplate?.Name ?? "none"}");
+   }
+
+   Console.WriteLine($"Page {result.Pagination.CurrentPage} of {result.Pagination.TotalPages}");
+
+   // Or with pagination
+   var page2 = await client.Console.ListPassTemplatePairsAsync(page: 2, perPage: 10);
+}
+```
+
 ## Testing Your Application Code
 
 When building applications that use the AccessGrid SDK, you'll want to test your own business logic without making actual API calls. Here are examples of how to test your application code that calls the AccessGrid library.
