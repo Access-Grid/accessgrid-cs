@@ -385,6 +385,48 @@ public async Task ListPassTemplatePairsAsync()
 }
 ```
 
+### Getting Ledger Items
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task GetLedgerItemsAsync()
+{
+   var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+   var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+   using var client = new AccessGridClient(accountId, secretKey);
+
+   // Get all ledger items
+   var result = await client.Console.GetLedgerItemsAsync();
+
+   foreach (var item in result.LedgerItems)
+   {
+       Console.WriteLine($"{item.CreatedAt} | {item.Kind} | {item.Amount} | {item.ExId}");
+
+       if (item.AccessPass != null)
+       {
+           Console.WriteLine($"  Pass: {item.AccessPass.FullName} ({item.AccessPass.State})");
+
+           if (item.AccessPass.PassTemplate != null)
+               Console.WriteLine($"  Template: {item.AccessPass.PassTemplate.Name}");
+       }
+   }
+
+   Console.WriteLine($"Page {result.Pagination.CurrentPage} of {result.Pagination.TotalPages}");
+
+   // With date filters and pagination
+   var filtered = await client.Console.GetLedgerItemsAsync(
+       startDate: DateTime.UtcNow.AddDays(-30),
+       endDate: DateTime.UtcNow,
+       page: 1,
+       perPage: 25
+   );
+}
+```
+
 ## Testing Your Application Code
 
 When building applications that use the AccessGrid SDK, you'll want to test your own business logic without making actual API calls. Here are examples of how to test your application code that calls the AccessGrid library.
