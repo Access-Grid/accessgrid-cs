@@ -201,20 +201,20 @@ public class ConsoleServiceTests
         var item = result.LedgerItems[0];
         Assert.That(item.CreatedAt, Is.EqualTo(new DateTime(2025, 6, 15, 14, 30, 0, DateTimeKind.Utc)));
         Assert.That(item.Amount, Is.EqualTo(-1.50m));
-        Assert.That(item.ExId, Is.EqualTo("li_abc123"));
+        Assert.That(item.Id, Is.EqualTo("li_abc123"));
         Assert.That(item.Kind, Is.EqualTo("access_pass_debit"));
         Assert.That(item.Metadata["access_pass_ex_id"].ToString(), Is.EqualTo("ap_xyz"));
 
         var ap = item.AccessPass;
         Assert.That(ap, Is.Not.Null);
-        Assert.That(ap!.ExId, Is.EqualTo("ap_xyz"));
+        Assert.That(ap!.Id, Is.EqualTo("ap_xyz"));
         Assert.That(ap.FullName, Is.EqualTo("Jane Doe"));
         Assert.That(ap.State, Is.EqualTo("active"));
         Assert.That(ap.UnifiedAccessPassExId, Is.EqualTo("uap_789"));
 
         var pt = ap.PassTemplate;
         Assert.That(pt, Is.Not.Null);
-        Assert.That(pt!.ExId, Is.EqualTo("pt_456"));
+        Assert.That(pt!.Id, Is.EqualTo("pt_456"));
         Assert.That(pt.Name, Is.EqualTo("Employee Badge"));
         Assert.That(pt.Protocol, Is.EqualTo("desfire"));
         Assert.That(pt.Platform, Is.EqualTo("apple"));

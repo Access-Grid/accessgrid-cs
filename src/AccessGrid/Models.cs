@@ -572,7 +572,7 @@ namespace AccessGrid
     public class LedgerItemPassTemplate
     {
         [JsonPropertyName("ex_id")]
-        public string ExId { get; set; }
+        public string Id { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
@@ -593,7 +593,7 @@ namespace AccessGrid
     public class LedgerItemAccessPass
     {
         [JsonPropertyName("ex_id")]
-        public string ExId { get; set; }
+        public string Id { get; set; }
 
         [JsonPropertyName("full_name")]
         public string FullName { get; set; }
@@ -623,7 +623,7 @@ namespace AccessGrid
         public decimal Amount { get; set; }
 
         [JsonPropertyName("ex_id")]
-        public string ExId { get; set; }
+        public string Id { get; set; }
 
         [JsonPropertyName("kind")]
         public string Kind { get; set; }
