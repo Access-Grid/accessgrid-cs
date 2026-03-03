@@ -125,4 +125,25 @@ public class AccessCardsServiceTests
         Assert.That(result.State, Is.EqualTo(AccessPassState.Active));
         mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards/card-789/resume", null), Times.Once);
     }
+
+    [Test]
+    public async Task UnlinkAsync_ShouldPostToCorrectEndpoint()
+    {
+        // Arrange
+        var mockApiService = new Mock<IApiService>();
+        var expectedCard = new AccessCard("card-789", null, AccessPassState.Unlink);
+
+        mockApiService
+            .Setup(x => x.PostAsync<AccessCard>("/v1/key-cards/card-789/unlink", null))
+            .ReturnsAsync(expectedCard);
+
+        var service = new AccessCardsService(mockApiService.Object);
+
+        // Act
+        var result = await service.UnlinkAsync("card-789");
+
+        // Assert
+        Assert.That(result.State, Is.EqualTo(AccessPassState.Unlink));
+        mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards/card-789/unlink", null), Times.Once);
+    }
 }
