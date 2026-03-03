@@ -74,7 +74,7 @@ public class ConsoleServiceTests
         var first = result.PassTemplatePairs[0];
         Assert.That(first.Id, Is.EqualTo("pair_1"));
         Assert.That(first.Name, Is.EqualTo("Employee Badge Pair"));
-        Assert.That(first.CreatedAt, Is.EqualTo("2025-01-01T00:00:00Z"));
+        Assert.That(first.CreatedAt, Is.EqualTo(new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
         Assert.That(first.IosTemplate.Id, Is.EqualTo("tmpl_ios_1"));
         Assert.That(first.IosTemplate.Platform, Is.EqualTo("apple"));
         Assert.That(first.AndroidTemplate.Id, Is.EqualTo("tmpl_android_1"));
@@ -199,7 +199,7 @@ public class ConsoleServiceTests
         Assert.That(result.LedgerItems, Has.Count.EqualTo(1));
 
         var item = result.LedgerItems[0];
-        Assert.That(item.CreatedAt, Is.EqualTo("2025-06-15T14:30:00Z"));
+        Assert.That(item.CreatedAt, Is.EqualTo(new DateTime(2025, 6, 15, 14, 30, 0, DateTimeKind.Utc)));
         Assert.That(item.Amount, Is.EqualTo(-1.50m));
         Assert.That(item.ExId, Is.EqualTo("li_abc123"));
         Assert.That(item.Kind, Is.EqualTo("access_pass_debit"));

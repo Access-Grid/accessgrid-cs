@@ -545,7 +545,7 @@ namespace AccessGrid
         public string Name { get; set; }
 
         [JsonPropertyName("created_at")]
-        public string CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
         [JsonPropertyName("android_template")]
         public PassTemplatePairInfo AndroidTemplate { get; set; }
@@ -617,7 +617,7 @@ namespace AccessGrid
     public class LedgerItem
     {
         [JsonPropertyName("created_at")]
-        public string CreatedAt { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
         [JsonPropertyName("amount")]
         public decimal Amount { get; set; }
