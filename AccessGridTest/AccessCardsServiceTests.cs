@@ -167,4 +167,30 @@ public class AccessCardsServiceTests
         Assert.That(result.Id, Is.EqualTo("card-789"));
         mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards/card-789/delete", null), Times.Once);
     }
+
+    [Test]
+    public async Task ProvisionAsync_ShouldDelegateToIssueAsync()
+    {
+        // Arrange
+        var mockApiService = new Mock<IApiService>();
+        var expectedCard = new AccessCard("card-new", "https://example.com/install", AccessPassState.Active);
+
+        mockApiService
+            .Setup(x => x.PostAsync<AccessCard>("/v1/key-cards", It.IsAny<ProvisionCardRequest>()))
+            .ReturnsAsync(expectedCard);
+
+        var service = new AccessCardsService(mockApiService.Object);
+        var request = new ProvisionCardRequest
+        {
+            CardTemplateId = "template-123",
+            FullName = "Test User"
+        };
+
+        // Act
+        var result = await service.ProvisionAsync(request);
+
+        // Assert
+        Assert.That(result.Id, Is.EqualTo("card-new"));
+        mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards", request), Times.Once);
+    }
 }
