@@ -359,20 +359,20 @@ public class ConsoleServiceTests
                 {
                     "created_at": "2025-06-15T14:30:00Z",
                     "amount": -1.50,
-                    "ex_id": "li_abc123",
+                    "id": "li_abc123",
                     "kind": "access_pass_debit",
                     "metadata": {
                         "access_pass_ex_id": "ap_xyz",
                         "pass_template_ex_id": "pt_456"
                     },
                     "access_pass": {
-                        "ex_id": "ap_xyz",
+                        "id": "ap_xyz",
                         "full_name": "Jane Doe",
                         "state": "active",
                         "metadata": { "department": "Engineering" },
                         "unified_access_pass_ex_id": "uap_789",
                         "pass_template": {
-                            "ex_id": "pt_456",
+                            "id": "pt_456",
                             "name": "Employee Badge",
                             "protocol": "desfire",
                             "platform": "apple",
@@ -454,7 +454,7 @@ public class ConsoleServiceTests
                 {
                     "created_at": "2025-03-01T00:00:00Z",
                     "amount": 100.00,
-                    "ex_id": "li_credit_1",
+                    "id": "li_credit_1",
                     "kind": "credit",
                     "metadata": {},
                     "access_pass": null
@@ -482,11 +482,11 @@ public class ConsoleServiceTests
                 {
                     "created_at": "2025-04-10T12:00:00Z",
                     "amount": -2.00,
-                    "ex_id": "li_no_tmpl",
+                    "id": "li_no_tmpl",
                     "kind": "access_pass_debit",
                     "metadata": { "access_pass_ex_id": "ap_solo" },
                     "access_pass": {
-                        "ex_id": "ap_solo",
+                        "id": "ap_solo",
                         "full_name": "Bob Smith",
                         "state": "suspended",
                         "metadata": {},
