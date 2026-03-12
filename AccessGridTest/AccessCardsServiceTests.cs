@@ -2,12 +2,39 @@
 
 using AccessGrid;
 using Moq;
+using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 
 [TestFixture]
 public class AccessCardsServiceTests
 {
+    private Mock<IHttpClientWrapper> _mockHttpClient;
+    private AccessGridClient _httpClient;
+
+    [SetUp]
+    public void SetUp()
+    {
+        _mockHttpClient = new Mock<IHttpClientWrapper>();
+        _httpClient = new AccessGridClient("test_account", "test_secret", _mockHttpClient.Object);
+    }
+
+    [TearDown]
+    public void TearDown()
+    {
+        _httpClient?.Dispose();
+    }
+
+    private void StubHttpResponse(string json, HttpStatusCode status = HttpStatusCode.OK)
+    {
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .ReturnsAsync(new HttpResponseMessage(status)
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            });
+    }
     [Test]
     public async Task IssueAsync_ShouldReturnAccessCard_WhenRequestIsValid()
     {
@@ -193,4 +220,93 @@ public class AccessCardsServiceTests
         Assert.That(result.Id, Is.EqualTo("card-new"));
         mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards", request), Times.Once);
     }
+
+    #region Temporary Pass
+
+    [Test]
+    public async Task GetAsync_DeserializesTemporaryField_WhenTrue()
+    {
+        var json = """
+        {
+            "id": "card-tmp-1",
+            "install_url": "https://example.com/install",
+            "state": "active",
+            "temporary": true,
+            "expiration_date": "2025-03-01T00:00:00Z"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _httpClient.AccessCards.GetAsync("card-tmp-1");
+
+        Assert.That(result.Temporary, Is.EqualTo(true));
+        Assert.That(result.Id, Is.EqualTo("card-tmp-1"));
+    }
+
+    [Test]
+    public async Task GetAsync_DeserializesTemporaryField_WhenFalse()
+    {
+        var json = """
+        {
+            "id": "card-reg-1",
+            "install_url": "https://example.com/install",
+            "state": "active",
+            "temporary": false
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _httpClient.AccessCards.GetAsync("card-reg-1");
+
+        Assert.That(result.Temporary, Is.EqualTo(false));
+    }
+
+    [Test]
+    public async Task GetAsync_TemporaryIsNull_WhenAbsentFromResponse()
+    {
+        var json = """
+        {
+            "id": "card-old-1",
+            "install_url": "https://example.com/install",
+            "state": "active"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _httpClient.AccessCards.GetAsync("card-old-1");
+
+        Assert.That(result.Temporary, Is.Null);
+    }
+
+    [Test]
+    public async Task IssueAsync_CanSetTemporaryOnRequest()
+    {
+        var json = """
+        {
+            "id": "card-tmp-new",
+            "install_url": "https://example.com/install",
+            "state": "active",
+            "temporary": true
+        }
+        """;
+        StubHttpResponse(json);
+
+        var request = new ProvisionCardRequest
+        {
+            CardTemplateId = "template-123",
+            FullName = "Temp User",
+            Temporary = true
+        };
+
+        var result = await _httpClient.AccessCards.IssueAsync(request);
+
+        Assert.That(result.Temporary, Is.EqualTo(true));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/key-cards")
+        )), Times.Once);
+    }
+
+    #endregion
 }

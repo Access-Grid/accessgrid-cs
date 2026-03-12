@@ -133,6 +133,12 @@ namespace AccessGrid
         public DateTime? ExpirationDate { get; set; }
 
         /// <summary>
+        /// Whether this is a temporary pass (DESFire and SmartTap only, max 24h)
+        /// </summary>
+        [JsonPropertyName("temporary")]
+        public bool? Temporary { get; set; }
+
+        /// <summary>
         /// Base64 encoded image of the employee
         /// </summary>
         [JsonPropertyName("employee_photo")]
@@ -603,6 +609,9 @@ namespace AccessGrid
 
         [JsonPropertyName("metadata")]
         public Dictionary<string, object> Metadata { get; set; }
+
+        [JsonPropertyName("temporary")]
+        public bool? Temporary { get; set; }
 
         [JsonPropertyName("unified_access_pass_ex_id")]
         public string UnifiedAccessPassExId { get; set; }
