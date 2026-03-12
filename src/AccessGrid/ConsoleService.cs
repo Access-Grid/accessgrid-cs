@@ -76,5 +76,53 @@ namespace AccessGrid
             var response = await _apiService.GetAsync<EventLogResponse>($"/v1/console/card-templates/{templateId}/logs", queryParams);
             return response?.Events ?? new List<EventLogEntry>();
         }
+
+        /// <summary>
+        /// Lists pass template pairs (enterprise only)
+        /// </summary>
+        /// <param name="page">Page number (defaults to 1 on the server)</param>
+        /// <param name="perPage">Items per page, max 100 (defaults to 50 on the server)</param>
+        /// <returns>Pass template pairs with pagination info</returns>
+        public async Task<PassTemplatePairsResponse> ListPassTemplatePairsAsync(int? page = null, int? perPage = null)
+        {
+            var queryParams = new Dictionary<string, string>();
+
+            if (page.HasValue)
+                queryParams.Add("page", page.Value.ToString());
+
+            if (perPage.HasValue)
+                queryParams.Add("per_page", perPage.Value.ToString());
+
+            var response = await _apiService.GetAsync<PassTemplatePairsResponse>("/v1/console/pass-template-pairs", queryParams);
+            return response ?? new PassTemplatePairsResponse();
+        }
+
+        /// <summary>
+        /// Gets ledger/billing items (enterprise only)
+        /// </summary>
+        /// <param name="page">Page number (defaults to 1 on the server)</param>
+        /// <param name="perPage">Items per page, max 100 (defaults to 50 on the server)</param>
+        /// <param name="startDate">Filter items created on or after this date (ISO8601)</param>
+        /// <param name="endDate">Filter items created on or before this date (ISO8601)</param>
+        /// <returns>Ledger items with pagination info</returns>
+        public async Task<LedgerItemsResponse> GetLedgerItemsAsync(int? page = null, int? perPage = null, System.DateTime? startDate = null, System.DateTime? endDate = null)
+        {
+            var queryParams = new Dictionary<string, string>();
+
+            if (page.HasValue)
+                queryParams.Add("page", page.Value.ToString());
+
+            if (perPage.HasValue)
+                queryParams.Add("per_page", perPage.Value.ToString());
+
+            if (startDate.HasValue)
+                queryParams.Add("start_date", startDate.Value.ToString("o"));
+
+            if (endDate.HasValue)
+                queryParams.Add("end_date", endDate.Value.ToString("o"));
+
+            var response = await _apiService.GetAsync<LedgerItemsResponse>("/v1/console/ledger-items", queryParams);
+            return response ?? new LedgerItemsResponse();
+        }
     }
 }

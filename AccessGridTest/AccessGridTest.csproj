@@ -5,8 +5,11 @@
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
+    </PropertyGroup>
+    <PropertyGroup Condition="Exists('../sgKey.snk')">
         <SignAssembly>true</SignAssembly>
         <AssemblyOriginatorKeyFile>../sgKey.snk</AssemblyOriginatorKeyFile>
+        <DefineConstants>$(DefineConstants);SIGNING_ENABLED</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.4">

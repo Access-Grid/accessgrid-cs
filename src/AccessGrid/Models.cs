@@ -501,6 +501,153 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// Pagination metadata returned by paginated API endpoints
+    /// </summary>
+    public class PaginationInfo
+    {
+        [JsonPropertyName("current_page")]
+        public int CurrentPage { get; set; }
+
+        [JsonPropertyName("per_page")]
+        public int PerPage { get; set; }
+
+        [JsonPropertyName("total_pages")]
+        public int TotalPages { get; set; }
+
+        [JsonPropertyName("total_count")]
+        public int TotalCount { get; set; }
+    }
+
+    /// <summary>
+    /// Lightweight template reference within a pass template pair
+    /// </summary>
+    public class PassTemplatePairInfo
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("platform")]
+        public string Platform { get; set; }
+    }
+
+    /// <summary>
+    /// A paired iOS/Android pass template configuration
+    /// </summary>
+    public class PassTemplatePair
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public DateTime? CreatedAt { get; set; }
+
+        [JsonPropertyName("android_template")]
+        public PassTemplatePairInfo AndroidTemplate { get; set; }
+
+        [JsonPropertyName("ios_template")]
+        public PassTemplatePairInfo IosTemplate { get; set; }
+    }
+
+    /// <summary>
+    /// Response wrapper for listing pass template pairs
+    /// </summary>
+    public class PassTemplatePairsResponse
+    {
+        [JsonPropertyName("pass_template_pairs")]
+        public List<PassTemplatePair> PassTemplatePairs { get; set; } = new List<PassTemplatePair>();
+
+        [JsonPropertyName("pagination")]
+        public PaginationInfo Pagination { get; set; }
+    }
+
+    /// <summary>
+    /// A pass template reference within a ledger item's access pass
+    /// </summary>
+    public class LedgerItemPassTemplate
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("protocol")]
+        public string Protocol { get; set; }
+
+        [JsonPropertyName("platform")]
+        public string Platform { get; set; }
+
+        [JsonPropertyName("use_case")]
+        public string UseCase { get; set; }
+    }
+
+    /// <summary>
+    /// An access pass reference within a ledger item
+    /// </summary>
+    public class LedgerItemAccessPass
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("full_name")]
+        public string FullName { get; set; }
+
+        [JsonPropertyName("state")]
+        public string State { get; set; }
+
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
+
+        [JsonPropertyName("unified_access_pass_ex_id")]
+        public string UnifiedAccessPassExId { get; set; }
+
+        [JsonPropertyName("pass_template")]
+        public LedgerItemPassTemplate PassTemplate { get; set; }
+    }
+
+    /// <summary>
+    /// A billing/transaction ledger entry
+    /// </summary>
+    public class LedgerItem
+    {
+        [JsonPropertyName("created_at")]
+        public DateTime? CreatedAt { get; set; }
+
+        [JsonPropertyName("amount")]
+        public decimal Amount { get; set; }
+
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("kind")]
+        public string Kind { get; set; }
+
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
+
+        [JsonPropertyName("access_pass")]
+        public LedgerItemAccessPass AccessPass { get; set; }
+    }
+
+    /// <summary>
+    /// Response wrapper for listing ledger items
+    /// </summary>
+    public class LedgerItemsResponse
+    {
+        [JsonPropertyName("ledger_items")]
+        public List<LedgerItem> LedgerItems { get; set; } = new List<LedgerItem>();
+
+        [JsonPropertyName("pagination")]
+        public PaginationInfo Pagination { get; set; }
+    }
+
+    /// <summary>
     /// The CloudEvents data of an access pass webhook event
     /// </summary>
     public class AccessPassEvent
