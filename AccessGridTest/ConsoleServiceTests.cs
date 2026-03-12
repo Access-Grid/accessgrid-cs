@@ -527,5 +527,88 @@ public class ConsoleServiceTests
         Assert.That(result.Pagination.TotalCount, Is.EqualTo(0));
     }
 
+    [Test]
+    public async Task GetLedgerItemsAsync_DeserializesTemporaryPassOnAccessPass()
+    {
+        var json = """
+        {
+            "ledger_items": [
+                {
+                    "created_at": "2025-06-15T14:30:00Z",
+                    "amount": -0.50,
+                    "id": "li_tmp_1",
+                    "kind": "temporary_pass_debit",
+                    "metadata": {
+                        "access_pass_ex_id": "ap_tmp",
+                        "temporary": true
+                    },
+                    "access_pass": {
+                        "id": "ap_tmp",
+                        "full_name": "Temp Visitor",
+                        "state": "active",
+                        "temporary": true,
+                        "metadata": { "department": "Lobby" },
+                        "unified_access_pass_ex_id": "uap_tmp",
+                        "pass_template": {
+                            "id": "pt_789",
+                            "name": "Visitor Badge",
+                            "protocol": "desfire",
+                            "platform": "apple",
+                            "use_case": "employee_badge"
+                        }
+                    }
+                }
+            ],
+            "pagination": {
+                "current_page": 1,
+                "per_page": 50,
+                "total_pages": 1,
+                "total_count": 1
+            }
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.GetLedgerItemsAsync();
+
+        var ap = result.LedgerItems[0].AccessPass;
+        Assert.That(ap, Is.Not.Null);
+        Assert.That(ap!.Temporary, Is.EqualTo(true));
+        Assert.That(ap.FullName, Is.EqualTo("Temp Visitor"));
+    }
+
+    [Test]
+    public async Task GetLedgerItemsAsync_TemporaryIsNull_WhenAbsentFromAccessPass()
+    {
+        var json = """
+        {
+            "ledger_items": [
+                {
+                    "created_at": "2025-06-15T14:30:00Z",
+                    "amount": -1.50,
+                    "id": "li_reg_1",
+                    "kind": "access_pass_debit",
+                    "metadata": {},
+                    "access_pass": {
+                        "id": "ap_reg",
+                        "full_name": "Regular User",
+                        "state": "active",
+                        "metadata": {},
+                        "unified_access_pass_ex_id": null
+                    }
+                }
+            ],
+            "pagination": { "current_page": 1, "per_page": 50, "total_pages": 1, "total_count": 1 }
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.GetLedgerItemsAsync();
+
+        var ap = result.LedgerItems[0].AccessPass;
+        Assert.That(ap, Is.Not.Null);
+        Assert.That(ap!.Temporary, Is.Null);
+    }
+
     #endregion
 }
