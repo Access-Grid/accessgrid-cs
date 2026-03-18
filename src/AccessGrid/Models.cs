@@ -691,6 +691,9 @@ namespace AccessGrid
         [JsonPropertyName("hid_org_id")]
         public string? HIDOrgId { get; set; }
 
+        [JsonPropertyName("apple_user_id")]
+        public string? AppleUserId { get; set; }
+
         [JsonPropertyName("card_templates")]
         public IReadOnlyList<AccessPassEventCardTemplate>? CardTemplates { get; set; }
 
