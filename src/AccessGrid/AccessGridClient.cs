@@ -275,9 +275,7 @@ namespace AccessGrid
                         ? JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent, _jsonOptions) 
                         : null;
                     
-                    var errorMessage = errorData?.ContainsKey("message") == true 
-                        ? errorData["message"]?.ToString() 
-                        : responseContent;
+                    var errorMessage =  responseContent;
                     
                     throw new AccessGridException($"API request failed: {errorMessage}");
                 }
