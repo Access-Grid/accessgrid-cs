@@ -741,6 +741,147 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// iOS In-App Provisioning preflight response
+    /// </summary>
+    public class IosPreflightResponse
+    {
+        [JsonPropertyName("provisioningCredentialIdentifier")]
+        public string ProvisioningCredentialIdentifier { get; set; }
+
+        [JsonPropertyName("sharingInstanceIdentifier")]
+        public string SharingInstanceIdentifier { get; set; }
+
+        [JsonPropertyName("cardTemplateIdentifier")]
+        public string CardTemplateIdentifier { get; set; }
+
+        [JsonPropertyName("environmentIdentifier")]
+        public string EnvironmentIdentifier { get; set; }
+    }
+
+    /// <summary>
+    /// A webhook configuration
+    /// </summary>
+    public class Webhook
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("url")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("auth_method")]
+        public string AuthMethod { get; set; }
+
+        [JsonPropertyName("subscribed_events")]
+        public List<string> SubscribedEvents { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public string CreatedAt { get; set; }
+
+        [JsonPropertyName("private_key")]
+        public string PrivateKey { get; set; }
+    }
+
+    /// <summary>
+    /// Response wrapper for listing webhooks
+    /// </summary>
+    public class WebhooksResponse
+    {
+        [JsonPropertyName("webhooks")]
+        public List<Webhook> Webhooks { get; set; } = new List<Webhook>();
+
+        [JsonPropertyName("pagination")]
+        public PaginationInfo Pagination { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for creating a webhook
+    /// </summary>
+    public class CreateWebhookRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("url")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("auth_method")]
+        public string AuthMethod { get; set; }
+
+        [JsonPropertyName("subscribed_events")]
+        public List<string> SubscribedEvents { get; set; }
+    }
+
+    /// <summary>
+    /// An HID organization
+    /// </summary>
+    public class HIDOrg
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("slug")]
+        public string Slug { get; set; }
+
+        [JsonPropertyName("first_name")]
+        public string FirstName { get; set; }
+
+        [JsonPropertyName("last_name")]
+        public string LastName { get; set; }
+
+        [JsonPropertyName("phone")]
+        public string Phone { get; set; }
+
+        [JsonPropertyName("full_address")]
+        public string FullAddress { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public string CreatedAt { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for creating an HID organization
+    /// </summary>
+    public class CreateHIDOrgRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("full_address")]
+        public string FullAddress { get; set; }
+
+        [JsonPropertyName("phone")]
+        public string Phone { get; set; }
+
+        [JsonPropertyName("first_name")]
+        public string FirstName { get; set; }
+
+        [JsonPropertyName("last_name")]
+        public string LastName { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for completing HID org registration
+    /// </summary>
+    public class CompleteHIDOrgRequest
+    {
+        [JsonPropertyName("email")]
+        public string Email { get; set; }
+
+        [JsonPropertyName("password")]
+        public string Password { get; set; }
+    }
+
+    /// <summary>
     /// The CloudEvents data of an access pass webhook event
     /// </summary>
     public class AccessPassEvent

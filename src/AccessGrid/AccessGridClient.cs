@@ -100,6 +100,14 @@ namespace AccessGrid
         {
             return await MakeRequestAsync<T>(new HttpMethod("PATCH"), endpoint, data);
         }
+
+        /// <summary>
+        /// Makes a DELETE request to the API
+        /// </summary>
+        public async Task DeleteAsync(string endpoint)
+        {
+            await MakeRequestAsync<object>(HttpMethod.Delete, endpoint);
+        }
         #endregion
 
         #region Helpers
