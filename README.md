@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.2.2
+Install-Package accessgrid -Version 1.3.0
 ```
 
 ## Authentication
@@ -232,29 +232,25 @@ public async Task CreateTemplateAsync()
 
    var template = await client.Console.CreateTemplateAsync(new CreateTemplateRequest
    {
-       Name = "Employee NFC key",
+       Name = "Employee Access Pass",
        Platform = "apple",
        UseCase = "employee_badge",
        Protocol = "desfire",
        AllowOnMultipleDevices = true,
        WatchCount = 2,
        IPhoneCount = 3,
-       Design = new TemplateDesign
+       BackgroundColor = "#FFFFFF",
+       LabelColor = "#000000",
+       LabelSecondaryColor = "#333333",
+       SupportUrl = "https://help.yourcompany.com",
+       SupportPhoneNumber = "+1-555-123-4567",
+       SupportEmail = "support@yourcompany.com",
+       PrivacyPolicyUrl = "https://yourcompany.com/privacy",
+       TermsAndConditionsUrl = "https://yourcompany.com/terms",
+       Metadata = new Dictionary<string, object>
        {
-           BackgroundColor = "#FFFFFF",
-           LabelColor = "#000000",
-           LabelSecondaryColor = "#333333",
-           BackgroundImage = "[image_in_base64_encoded_format]",
-           LogoImage = "[image_in_base64_encoded_format]",
-           IconImage = "[image_in_base64_encoded_format]"
-       },
-       SupportInfo = new SupportInfo
-       {
-           SupportUrl = "https://help.yourcompany.com",
-           SupportPhoneNumber = "+1-555-123-4567",
-           SupportEmail = "support@yourcompany.com",
-           PrivacyPolicyUrl = "https://yourcompany.com/privacy",
-           TermsAndConditionsUrl = "https://yourcompany.com/terms"
+           ["version"] = "2.1",
+           ["approval_status"] = "approved"
        }
    });
 
