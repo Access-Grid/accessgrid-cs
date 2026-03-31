@@ -282,7 +282,15 @@ public class ConsoleServiceTests
             Name = "Updated Badge",
             AllowOnMultipleDevices = false,
             WatchCount = 1,
-            IPhoneCount = 2
+            IPhoneCount = 2,
+            BackgroundColor = "#FFFFFF",
+            LabelColor = "#000000",
+            LabelSecondaryColor = "#333333",
+            SupportUrl = "https://help.yourcompany.com",
+            SupportPhoneNumber = "+1-555-123-4567",
+            SupportEmail = "support@yourcompany.com",
+            PrivacyPolicyUrl = "https://yourcompany.com/privacy",
+            TermsAndConditionsUrl = "https://yourcompany.com/terms"
         };
 
         var result = await _client.Console.UpdateTemplateAsync(request);
@@ -294,6 +302,41 @@ public class ConsoleServiceTests
             req.Method == HttpMethod.Put &&
             req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-123")
         )), Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateTemplateAsync_SendsFlatDesignAndSupportParams()
+    {
+        var json = """{ "id": "tmpl-123", "name": "Test" }""";
+
+        string capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        var request = new UpdateTemplateRequest
+        {
+            CardTemplateId = "tmpl-123",
+            Name = "Test",
+            BackgroundColor = "#FFFFFF",
+            SupportUrl = "https://help.yourcompany.com"
+        };
+
+        await _client.Console.UpdateTemplateAsync(request);
+
+        Assert.That(capturedBody, Is.Not.Null);
+        Assert.That(capturedBody, Does.Contain("background_color"));
+        Assert.That(capturedBody, Does.Contain("support_url"));
+        Assert.That(capturedBody, Does.Not.Contain("\"design\""));
+        Assert.That(capturedBody, Does.Not.Contain("\"support_info\""));
     }
 
     #endregion

@@ -276,18 +276,18 @@ public async Task UpdateTemplateAsync()
      new UpdateTemplateRequest
      {
          CardTemplateId = "0xd3adb00b5",
-         Name = "Updated Employee NFC key",
+         Name = "Updated Employee Access Pass",
          AllowOnMultipleDevices = true,
          WatchCount = 2,
          IPhoneCount = 3,
-         SupportInfo = new SupportInfo
-         {
-             SupportUrl = "https://help.yourcompany.com",
-             SupportPhoneNumber = "+1-555-123-4567",
-             SupportEmail = "support@yourcompany.com",
-             PrivacyPolicyUrl = "https://yourcompany.com/privacy",
-             TermsAndConditionsUrl = "https://yourcompany.com/terms"
-         }
+         BackgroundColor = "#FFFFFF",
+         LabelColor = "#000000",
+         LabelSecondaryColor = "#333333",
+         SupportUrl = "https://help.yourcompany.com",
+         SupportPhoneNumber = "+1-555-123-4567",
+         SupportEmail = "support@yourcompany.com",
+         PrivacyPolicyUrl = "https://yourcompany.com/privacy",
+         TermsAndConditionsUrl = "https://yourcompany.com/terms"
      }
    );
 
