@@ -43,5 +43,12 @@ namespace AccessGrid
         /// <param name="data">Data to send in request body</param>
         /// <returns>Deserialized response</returns>
         Task<T> PatchAsync<T>(string endpoint, object data);
+
+        /// <summary>
+        /// Makes a DELETE request to the API
+        /// </summary>
+        /// <param name="endpoint">API endpoint</param>
+        /// <returns>Task</returns>
+        Task DeleteAsync(string endpoint);
     }
 }

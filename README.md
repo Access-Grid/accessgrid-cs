@@ -423,6 +423,147 @@ public async Task GetLedgerItemsAsync()
 }
 ```
 
+### iOS In-App Provisioning Preflight
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task GenerateProvisioningCredentialsAsync()
+{
+    var client = new AccessGridClient(
+        Environment.GetEnvironmentVariable("ACCOUNT_ID"),
+        Environment.GetEnvironmentVariable("SECRET_KEY")
+    );
+
+    var response = await client.Console.IosPreflightAsync(
+        cardTemplateId: "0xt3mp14t3-3x1d",
+        accessPassExId: "0xp455-3x1d"
+    );
+
+    Console.WriteLine($"Provisioning Credential ID: {response.ProvisioningCredentialIdentifier}");
+    Console.WriteLine($"Sharing Instance ID: {response.SharingInstanceIdentifier}");
+    Console.WriteLine($"Card Template ID: {response.CardTemplateIdentifier}");
+    Console.WriteLine($"Environment ID: {response.EnvironmentIdentifier}");
+}
+```
+
+### Webhooks
+
+```csharp
+using AccessGrid;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+public async Task ManageWebhooksAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    // List webhooks
+    var webhooks = await client.Console.Webhooks.ListAsync();
+    foreach (var wh in webhooks.Webhooks)
+    {
+        Console.WriteLine($"Webhook: {wh.Name} ({wh.Id})");
+    }
+
+    // Create a webhook
+    var newWebhook = await client.Console.Webhooks.CreateAsync(new CreateWebhookRequest
+    {
+        Name = "My Webhook",
+        Url = "https://example.com/webhook",
+        SubscribedEvents = new List<string> { "ag.access_pass.issued", "ag.access_pass.activated" }
+    });
+    Console.WriteLine($"Created webhook: {newWebhook.Id}");
+    Console.WriteLine($"Private key: {newWebhook.PrivateKey}");
+
+    // Delete a webhook
+    await client.Console.Webhooks.DeleteAsync(newWebhook.Id);
+}
+```
+
+### HID Organizations
+
+#### Create an HID org
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task CreateOrgAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    var client = new AccessGridClient(accountId, secretKey);
+
+    var org = await client.Console.HID.Orgs.CreateAsync(new CreateHIDOrgRequest
+    {
+        Name = "My Org",
+        FullAddress = "1 Main St, NY NY",
+        Phone = "+1-555-0000",
+        FirstName = "Ada",
+        LastName = "Lovelace"
+    });
+
+    Console.WriteLine($"Created org: {org.Name} (ID: {org.Id})");
+    Console.WriteLine($"Slug: {org.Slug}");
+}
+```
+
+#### List HID orgs
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task ListOrgsAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    var client = new AccessGridClient(accountId, secretKey);
+
+    var orgs = await client.Console.HID.Orgs.ListAsync();
+
+    foreach (var org in orgs)
+    {
+        Console.WriteLine($"Org ID: {org.Id}, Name: {org.Name}, Slug: {org.Slug}");
+    }
+}
+```
+
+#### Activate an HID org
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task CompleteRegistrationAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    var client = new AccessGridClient(accountId, secretKey);
+
+    var result = await client.Console.HID.Orgs.ActivateAsync(new CompleteHIDOrgRequest
+    {
+        Email = "admin@example.com",
+        Password = "hid-password-123"
+    });
+
+    Console.WriteLine($"Completed registration for org: {result.Name}");
+    Console.WriteLine($"Status: {result.Status}");
+}
+```
+
 ## Testing Your Application Code
 
 When building applications that use the AccessGrid SDK, you'll want to test your own business logic without making actual API calls. Here are examples of how to test your application code that calls the AccessGrid library.
@@ -748,6 +889,32 @@ public class AccessCardsApiTests
         _mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards/card123/suspend", null), Times.Once);
     }
 }
+
+## Feature Matrix
+
+| Endpoint | Method | Supported |
+|---|---|:---:|
+| POST /v1/key-cards | `AccessCards.ProvisionAsync()` | Y |
+| GET /v1/key-cards/{id} | `AccessCards.GetAsync()` | Y |
+| PATCH /v1/key-cards/{id} | `AccessCards.UpdateAsync()` | Y |
+| GET /v1/key-cards | `AccessCards.ListAsync()` | Y |
+| POST /v1/key-cards/{id}/suspend | `AccessCards.SuspendAsync()` | Y |
+| POST /v1/key-cards/{id}/resume | `AccessCards.ResumeAsync()` | Y |
+| POST /v1/key-cards/{id}/unlink | `AccessCards.UnlinkAsync()` | Y |
+| POST /v1/key-cards/{id}/delete | `AccessCards.DeleteAsync()` | Y |
+| POST /v1/console/card-templates | `Console.CreateTemplateAsync()` | Y |
+| PUT /v1/console/card-templates/{id} | `Console.UpdateTemplateAsync()` | Y |
+| GET /v1/console/card-templates/{id} | `Console.ReadTemplateAsync()` | Y |
+| GET /v1/console/card-templates/{id}/logs | `Console.EventLogAsync()` | Y |
+| GET /v1/console/pass-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
+| POST /v1/console/card-templates/{id}/ios_preflight | `Console.IosPreflightAsync()` | Y |
+| GET /v1/console/ledger-items | `Console.GetLedgerItemsAsync()` | Y |
+| GET /v1/console/webhooks | `Console.Webhooks.ListAsync()` | Y |
+| POST /v1/console/webhooks | `Console.Webhooks.CreateAsync()` | Y |
+| DELETE /v1/console/webhooks/{id} | `Console.Webhooks.DeleteAsync()` | Y |
+| POST /v1/console/hid/orgs | `Console.HID.Orgs.CreateAsync()` | Y |
+| POST /v1/console/hid/orgs/activate | `Console.HID.Orgs.ActivateAsync()` | Y |
+| GET /v1/console/hid/orgs | `Console.HID.Orgs.ListAsync()` | Y |
 
 ## License
 
