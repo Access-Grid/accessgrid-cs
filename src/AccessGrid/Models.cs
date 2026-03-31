@@ -483,10 +483,52 @@ namespace AccessGrid
         public int? IPhoneCount { get; set; }
 
         /// <summary>
-        /// Information for users that shows up on the back of the NFC key
+        /// Must be a 6 character hexadecimal value for the background color, i.e. #FFFFFF
         /// </summary>
-        [JsonPropertyName("support_info")]
-        public SupportInfo SupportInfo { get; set; }
+        [JsonPropertyName("background_color")]
+        public string BackgroundColor { get; set; }
+
+        /// <summary>
+        /// Must be a 6 character hexadecimal value for the label color, i.e. #000000
+        /// </summary>
+        [JsonPropertyName("label_color")]
+        public string LabelColor { get; set; }
+
+        /// <summary>
+        /// Must be a 6 character hexadecimal value for the secondary label color, i.e. #333333
+        /// </summary>
+        [JsonPropertyName("label_secondary_color")]
+        public string LabelSecondaryColor { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("support_url")]
+        public string SupportUrl { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("support_phone_number")]
+        public string SupportPhoneNumber { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("support_email")]
+        public string SupportEmail { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("privacy_policy_url")]
+        public string PrivacyPolicyUrl { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("terms_and_conditions_url")]
+        public string TermsAndConditionsUrl { get; set; }
     }
 
     public class EventLogFilters
