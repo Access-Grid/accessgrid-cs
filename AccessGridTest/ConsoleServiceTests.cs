@@ -165,7 +165,8 @@ public class ConsoleServiceTests
             "protocol": "desfire",
             "created_at": "2025-03-01T00:00:00Z",
             "issued_keys_count": 0,
-            "active_keys_count": 0
+            "active_keys_count": 0,
+            "metadata": { "version": "2.1" }
         }
         """;
         StubHttpResponse(json);
@@ -178,7 +179,20 @@ public class ConsoleServiceTests
             Protocol = Protocol.DESFire,
             AllowOnMultipleDevices = true,
             WatchCount = 2,
-            IPhoneCount = 3
+            IPhoneCount = 3,
+            BackgroundColor = "#FFFFFF",
+            LabelColor = "#000000",
+            LabelSecondaryColor = "#333333",
+            SupportUrl = "https://help.yourcompany.com",
+            SupportPhoneNumber = "+1-555-123-4567",
+            SupportEmail = "support@yourcompany.com",
+            PrivacyPolicyUrl = "https://yourcompany.com/privacy",
+            TermsAndConditionsUrl = "https://yourcompany.com/terms",
+            Metadata = new Dictionary<string, object>
+            {
+                ["version"] = "2.1",
+                ["approval_status"] = "approved"
+            }
         };
 
         var result = await _client.Console.CreateTemplateAsync(request);
@@ -194,6 +208,54 @@ public class ConsoleServiceTests
             req.Method == HttpMethod.Post &&
             req.RequestUri!.ToString().Contains("/v1/console/card-templates")
         )), Times.Once);
+    }
+
+    [Test]
+    public async Task CreateTemplateAsync_SendsFlatDesignAndSupportParams()
+    {
+        var json = """
+        {
+            "id": "tmpl-flat",
+            "name": "Flat Params Template",
+            "platform": "apple",
+            "use_case": "employee_badge",
+            "protocol": "desfire",
+            "metadata": { "version": "2.1" }
+        }
+        """;
+
+        string capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        var request = new CreateTemplateRequest
+        {
+            Name = "Flat Params Template",
+            Platform = Platform.Apple,
+            UseCase = "employee_badge",
+            Protocol = Protocol.DESFire,
+            BackgroundColor = "#FFFFFF",
+            SupportUrl = "https://help.yourcompany.com",
+            Metadata = new Dictionary<string, object> { ["version"] = "2.1" }
+        };
+
+        await _client.Console.CreateTemplateAsync(request);
+
+        Assert.That(capturedBody, Is.Not.Null);
+        // Flat params should appear at root level, not nested under design/support_info
+        Assert.That(capturedBody, Does.Contain("background_color"));
+        Assert.That(capturedBody, Does.Contain("support_url"));
+        Assert.That(capturedBody, Does.Not.Contain("\"design\""));
+        Assert.That(capturedBody, Does.Not.Contain("\"support_info\""));
     }
 
     #endregion

@@ -19,7 +19,7 @@ namespace AccessGrid
         private readonly string _accountId;
         private readonly string _secretKey;
         private readonly JsonSerializerOptions _jsonOptions;
-        private const string Version = "1.0.0";
+        private const string Version = "1.3.0";
 
         /// <summary>
         /// Service for managing access cards
