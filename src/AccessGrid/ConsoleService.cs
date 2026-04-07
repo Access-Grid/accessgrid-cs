@@ -10,9 +10,21 @@ namespace AccessGrid
     {
         private readonly IApiService _apiService;
 
+        /// <summary>
+        /// HID-related services
+        /// </summary>
+        public HIDService HID { get; }
+
+        /// <summary>
+        /// Webhook management services
+        /// </summary>
+        public WebhooksService Webhooks { get; }
+
         internal ConsoleService(IApiService apiService)
         {
             _apiService = apiService;
+            HID = new HIDService(apiService);
+            Webhooks = new WebhooksService(apiService);
         }
 
         /// <summary>
@@ -123,6 +135,125 @@ namespace AccessGrid
 
             var response = await _apiService.GetAsync<LedgerItemsResponse>("/v1/console/ledger-items", queryParams);
             return response ?? new LedgerItemsResponse();
+        }
+
+        /// <summary>
+        /// Retrieves iOS In-App Provisioning identifiers for a card template and access pass
+        /// </summary>
+        /// <param name="cardTemplateId">The card template ID</param>
+        /// <param name="accessPassExId">The access pass external ID</param>
+        /// <returns>iOS preflight identifiers</returns>
+        public async Task<IosPreflightResponse> IosPreflightAsync(string cardTemplateId, string accessPassExId)
+        {
+            var body = new { access_pass_ex_id = accessPassExId };
+            var response = await _apiService.PostAsync<IosPreflightResponse>($"/v1/console/card-templates/{cardTemplateId}/ios_preflight", body);
+            return response;
+        }
+    }
+
+    /// <summary>
+    /// Service for managing webhooks
+    /// </summary>
+    public class WebhooksService
+    {
+        private readonly IApiService _apiService;
+
+        internal WebhooksService(IApiService apiService)
+        {
+            _apiService = apiService;
+        }
+
+        /// <summary>
+        /// Lists all webhooks
+        /// </summary>
+        public async Task<WebhooksResponse> ListAsync(int? page = null, int? perPage = null)
+        {
+            var queryParams = new Dictionary<string, string>();
+
+            if (page.HasValue)
+                queryParams.Add("page", page.Value.ToString());
+
+            if (perPage.HasValue)
+                queryParams.Add("per_page", perPage.Value.ToString());
+
+            var response = await _apiService.GetAsync<WebhooksResponse>("/v1/console/webhooks", queryParams);
+            return response ?? new WebhooksResponse();
+        }
+
+        /// <summary>
+        /// Creates a new webhook
+        /// </summary>
+        public async Task<Webhook> CreateAsync(CreateWebhookRequest request)
+        {
+            if (string.IsNullOrEmpty(request.AuthMethod))
+                request.AuthMethod = "bearer_token";
+
+            var response = await _apiService.PostAsync<Webhook>("/v1/console/webhooks", request);
+            return response;
+        }
+
+        /// <summary>
+        /// Deletes a webhook by ID
+        /// </summary>
+        public async Task DeleteAsync(string webhookId)
+        {
+            await _apiService.DeleteAsync($"/v1/console/webhooks/{webhookId}");
+        }
+    }
+
+    /// <summary>
+    /// Service providing access to HID-related services
+    /// </summary>
+    public class HIDService
+    {
+        /// <summary>
+        /// HID organization management
+        /// </summary>
+        public HIDOrgsService Orgs { get; }
+
+        internal HIDService(IApiService apiService)
+        {
+            Orgs = new HIDOrgsService(apiService);
+        }
+    }
+
+    /// <summary>
+    /// Service for managing HID organizations
+    /// </summary>
+    public class HIDOrgsService
+    {
+        private readonly IApiService _apiService;
+
+        internal HIDOrgsService(IApiService apiService)
+        {
+            _apiService = apiService;
+        }
+
+        /// <summary>
+        /// Creates a new HID organization
+        /// </summary>
+        public async Task<HIDOrg> CreateAsync(CreateHIDOrgRequest request)
+        {
+            var response = await _apiService.PostAsync<HIDOrg>("/v1/console/hid/orgs", request);
+            return response;
+        }
+
+        /// <summary>
+        /// Lists all HID organizations
+        /// </summary>
+        public async Task<List<HIDOrg>> ListAsync()
+        {
+            var response = await _apiService.GetAsync<List<HIDOrg>>("/v1/console/hid/orgs");
+            return response ?? new List<HIDOrg>();
+        }
+
+        /// <summary>
+        /// Completes HID org registration with credentials
+        /// </summary>
+        public async Task<HIDOrg> ActivateAsync(CompleteHIDOrgRequest request)
+        {
+            var response = await _apiService.PostAsync<HIDOrg>("/v1/console/hid/orgs/activate", request);
+            return response;
         }
     }
 }

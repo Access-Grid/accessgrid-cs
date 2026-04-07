@@ -396,16 +396,58 @@ namespace AccessGrid
         public int? IPhoneCount { get; set; }
 
         /// <summary>
-        /// Object representing card template design
+        /// Must be a 6 character hexadecimal value for the background color, i.e. #FFFFFF
         /// </summary>
-        [JsonPropertyName("design")]
-        public TemplateDesign Design { get; set; }
+        [JsonPropertyName("background_color")]
+        public string BackgroundColor { get; set; }
 
         /// <summary>
-        /// Information for users that shows up on the back of the NFC key
+        /// Must be a 6 character hexadecimal value for the label color, i.e. #000000
         /// </summary>
-        [JsonPropertyName("support_info")]
-        public SupportInfo SupportInfo { get; set; }
+        [JsonPropertyName("label_color")]
+        public string LabelColor { get; set; }
+
+        /// <summary>
+        /// Must be a 6 character hexadecimal value for the secondary label color, i.e. #333333
+        /// </summary>
+        [JsonPropertyName("label_secondary_color")]
+        public string LabelSecondaryColor { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("support_url")]
+        public string SupportUrl { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("support_phone_number")]
+        public string SupportPhoneNumber { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("support_email")]
+        public string SupportEmail { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("privacy_policy_url")]
+        public string PrivacyPolicyUrl { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("terms_and_conditions_url")]
+        public string TermsAndConditionsUrl { get; set; }
+
+        /// <summary>
+        /// Optional metadata key-value pairs
+        /// </summary>
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
     }
 
     public class UpdateTemplateRequest
@@ -441,10 +483,52 @@ namespace AccessGrid
         public int? IPhoneCount { get; set; }
 
         /// <summary>
-        /// Information for users that shows up on the back of the NFC key
+        /// Must be a 6 character hexadecimal value for the background color, i.e. #FFFFFF
         /// </summary>
-        [JsonPropertyName("support_info")]
-        public SupportInfo SupportInfo { get; set; }
+        [JsonPropertyName("background_color")]
+        public string BackgroundColor { get; set; }
+
+        /// <summary>
+        /// Must be a 6 character hexadecimal value for the label color, i.e. #000000
+        /// </summary>
+        [JsonPropertyName("label_color")]
+        public string LabelColor { get; set; }
+
+        /// <summary>
+        /// Must be a 6 character hexadecimal value for the secondary label color, i.e. #333333
+        /// </summary>
+        [JsonPropertyName("label_secondary_color")]
+        public string LabelSecondaryColor { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("support_url")]
+        public string SupportUrl { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("support_phone_number")]
+        public string SupportPhoneNumber { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("support_email")]
+        public string SupportEmail { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("privacy_policy_url")]
+        public string PrivacyPolicyUrl { get; set; }
+
+        /// <summary>
+        /// Shows on the back of the issued NFC key
+        /// </summary>
+        [JsonPropertyName("terms_and_conditions_url")]
+        public string TermsAndConditionsUrl { get; set; }
     }
 
     public class EventLogFilters
@@ -654,6 +738,147 @@ namespace AccessGrid
 
         [JsonPropertyName("pagination")]
         public PaginationInfo Pagination { get; set; }
+    }
+
+    /// <summary>
+    /// iOS In-App Provisioning preflight response
+    /// </summary>
+    public class IosPreflightResponse
+    {
+        [JsonPropertyName("provisioningCredentialIdentifier")]
+        public string ProvisioningCredentialIdentifier { get; set; }
+
+        [JsonPropertyName("sharingInstanceIdentifier")]
+        public string SharingInstanceIdentifier { get; set; }
+
+        [JsonPropertyName("cardTemplateIdentifier")]
+        public string CardTemplateIdentifier { get; set; }
+
+        [JsonPropertyName("environmentIdentifier")]
+        public string EnvironmentIdentifier { get; set; }
+    }
+
+    /// <summary>
+    /// A webhook configuration
+    /// </summary>
+    public class Webhook
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("url")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("auth_method")]
+        public string AuthMethod { get; set; }
+
+        [JsonPropertyName("subscribed_events")]
+        public List<string> SubscribedEvents { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public string CreatedAt { get; set; }
+
+        [JsonPropertyName("private_key")]
+        public string PrivateKey { get; set; }
+    }
+
+    /// <summary>
+    /// Response wrapper for listing webhooks
+    /// </summary>
+    public class WebhooksResponse
+    {
+        [JsonPropertyName("webhooks")]
+        public List<Webhook> Webhooks { get; set; } = new List<Webhook>();
+
+        [JsonPropertyName("pagination")]
+        public PaginationInfo Pagination { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for creating a webhook
+    /// </summary>
+    public class CreateWebhookRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("url")]
+        public string Url { get; set; }
+
+        [JsonPropertyName("auth_method")]
+        public string AuthMethod { get; set; }
+
+        [JsonPropertyName("subscribed_events")]
+        public List<string> SubscribedEvents { get; set; }
+    }
+
+    /// <summary>
+    /// An HID organization
+    /// </summary>
+    public class HIDOrg
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("slug")]
+        public string Slug { get; set; }
+
+        [JsonPropertyName("first_name")]
+        public string FirstName { get; set; }
+
+        [JsonPropertyName("last_name")]
+        public string LastName { get; set; }
+
+        [JsonPropertyName("phone")]
+        public string Phone { get; set; }
+
+        [JsonPropertyName("full_address")]
+        public string FullAddress { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public string CreatedAt { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for creating an HID organization
+    /// </summary>
+    public class CreateHIDOrgRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("full_address")]
+        public string FullAddress { get; set; }
+
+        [JsonPropertyName("phone")]
+        public string Phone { get; set; }
+
+        [JsonPropertyName("first_name")]
+        public string FirstName { get; set; }
+
+        [JsonPropertyName("last_name")]
+        public string LastName { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for completing HID org registration
+    /// </summary>
+    public class CompleteHIDOrgRequest
+    {
+        [JsonPropertyName("email")]
+        public string Email { get; set; }
+
+        [JsonPropertyName("password")]
+        public string Password { get; set; }
     }
 
     /// <summary>

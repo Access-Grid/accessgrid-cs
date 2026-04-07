@@ -165,7 +165,8 @@ public class ConsoleServiceTests
             "protocol": "desfire",
             "created_at": "2025-03-01T00:00:00Z",
             "issued_keys_count": 0,
-            "active_keys_count": 0
+            "active_keys_count": 0,
+            "metadata": { "version": "2.1" }
         }
         """;
         StubHttpResponse(json);
@@ -178,7 +179,20 @@ public class ConsoleServiceTests
             Protocol = Protocol.DESFire,
             AllowOnMultipleDevices = true,
             WatchCount = 2,
-            IPhoneCount = 3
+            IPhoneCount = 3,
+            BackgroundColor = "#FFFFFF",
+            LabelColor = "#000000",
+            LabelSecondaryColor = "#333333",
+            SupportUrl = "https://help.yourcompany.com",
+            SupportPhoneNumber = "+1-555-123-4567",
+            SupportEmail = "support@yourcompany.com",
+            PrivacyPolicyUrl = "https://yourcompany.com/privacy",
+            TermsAndConditionsUrl = "https://yourcompany.com/terms",
+            Metadata = new Dictionary<string, object>
+            {
+                ["version"] = "2.1",
+                ["approval_status"] = "approved"
+            }
         };
 
         var result = await _client.Console.CreateTemplateAsync(request);
@@ -194,6 +208,54 @@ public class ConsoleServiceTests
             req.Method == HttpMethod.Post &&
             req.RequestUri!.ToString().Contains("/v1/console/card-templates")
         )), Times.Once);
+    }
+
+    [Test]
+    public async Task CreateTemplateAsync_SendsFlatDesignAndSupportParams()
+    {
+        var json = """
+        {
+            "id": "tmpl-flat",
+            "name": "Flat Params Template",
+            "platform": "apple",
+            "use_case": "employee_badge",
+            "protocol": "desfire",
+            "metadata": { "version": "2.1" }
+        }
+        """;
+
+        string capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        var request = new CreateTemplateRequest
+        {
+            Name = "Flat Params Template",
+            Platform = Platform.Apple,
+            UseCase = "employee_badge",
+            Protocol = Protocol.DESFire,
+            BackgroundColor = "#FFFFFF",
+            SupportUrl = "https://help.yourcompany.com",
+            Metadata = new Dictionary<string, object> { ["version"] = "2.1" }
+        };
+
+        await _client.Console.CreateTemplateAsync(request);
+
+        Assert.That(capturedBody, Is.Not.Null);
+        // Flat params should appear at root level, not nested under design/support_info
+        Assert.That(capturedBody, Does.Contain("background_color"));
+        Assert.That(capturedBody, Does.Contain("support_url"));
+        Assert.That(capturedBody, Does.Not.Contain("\"design\""));
+        Assert.That(capturedBody, Does.Not.Contain("\"support_info\""));
     }
 
     #endregion
@@ -220,7 +282,15 @@ public class ConsoleServiceTests
             Name = "Updated Badge",
             AllowOnMultipleDevices = false,
             WatchCount = 1,
-            IPhoneCount = 2
+            IPhoneCount = 2,
+            BackgroundColor = "#FFFFFF",
+            LabelColor = "#000000",
+            LabelSecondaryColor = "#333333",
+            SupportUrl = "https://help.yourcompany.com",
+            SupportPhoneNumber = "+1-555-123-4567",
+            SupportEmail = "support@yourcompany.com",
+            PrivacyPolicyUrl = "https://yourcompany.com/privacy",
+            TermsAndConditionsUrl = "https://yourcompany.com/terms"
         };
 
         var result = await _client.Console.UpdateTemplateAsync(request);
@@ -232,6 +302,41 @@ public class ConsoleServiceTests
             req.Method == HttpMethod.Put &&
             req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-123")
         )), Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateTemplateAsync_SendsFlatDesignAndSupportParams()
+    {
+        var json = """{ "id": "tmpl-123", "name": "Test" }""";
+
+        string capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        var request = new UpdateTemplateRequest
+        {
+            CardTemplateId = "tmpl-123",
+            Name = "Test",
+            BackgroundColor = "#FFFFFF",
+            SupportUrl = "https://help.yourcompany.com"
+        };
+
+        await _client.Console.UpdateTemplateAsync(request);
+
+        Assert.That(capturedBody, Is.Not.Null);
+        Assert.That(capturedBody, Does.Contain("background_color"));
+        Assert.That(capturedBody, Does.Contain("support_url"));
+        Assert.That(capturedBody, Does.Not.Contain("\"design\""));
+        Assert.That(capturedBody, Does.Not.Contain("\"support_info\""));
     }
 
     #endregion
@@ -608,6 +713,243 @@ public class ConsoleServiceTests
         var ap = result.LedgerItems[0].AccessPass;
         Assert.That(ap, Is.Not.Null);
         Assert.That(ap!.Temporary, Is.Null);
+    }
+
+    #endregion
+
+    #region IosPreflightAsync
+
+    [Test]
+    public async Task IosPreflightAsync_ShouldReturnPreflightIdentifiers()
+    {
+        var json = """
+        {
+            "provisioningCredentialIdentifier": "prov-cred-123",
+            "sharingInstanceIdentifier": "sharing-456",
+            "cardTemplateIdentifier": "tmpl-789",
+            "environmentIdentifier": "env-abc"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.IosPreflightAsync("tmpl-789", "pass-456");
+
+        Assert.That(result.ProvisioningCredentialIdentifier, Is.EqualTo("prov-cred-123"));
+        Assert.That(result.SharingInstanceIdentifier, Is.EqualTo("sharing-456"));
+        Assert.That(result.CardTemplateIdentifier, Is.EqualTo("tmpl-789"));
+        Assert.That(result.EnvironmentIdentifier, Is.EqualTo("env-abc"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-789/ios_preflight")
+        )), Times.Once);
+    }
+
+    #endregion
+
+    #region WebhooksService
+
+    [Test]
+    public async Task WebhooksListAsync_ShouldReturnWebhooks()
+    {
+        var json = """
+        {
+            "webhooks": [
+                {
+                    "id": "wh_1",
+                    "name": "My Webhook",
+                    "url": "https://example.com/webhook",
+                    "auth_method": "bearer_token",
+                    "subscribed_events": ["ag.access_pass.issued"],
+                    "created_at": "2025-03-01T00:00:00Z"
+                }
+            ],
+            "pagination": { "current_page": 1, "per_page": 50, "total_pages": 1, "total_count": 1 }
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.Webhooks.ListAsync();
+
+        Assert.That(result.Webhooks, Has.Count.EqualTo(1));
+        Assert.That(result.Webhooks[0].Id, Is.EqualTo("wh_1"));
+        Assert.That(result.Webhooks[0].Name, Is.EqualTo("My Webhook"));
+        Assert.That(result.Webhooks[0].Url, Is.EqualTo("https://example.com/webhook"));
+        Assert.That(result.Webhooks[0].AuthMethod, Is.EqualTo("bearer_token"));
+        Assert.That(result.Webhooks[0].SubscribedEvents, Has.Count.EqualTo(1));
+        Assert.That(result.Pagination.TotalCount, Is.EqualTo(1));
+    }
+
+    [Test]
+    public async Task WebhooksCreateAsync_ShouldCreateWebhook()
+    {
+        var json = """
+        {
+            "id": "wh_new",
+            "name": "New Webhook",
+            "url": "https://example.com/hook",
+            "auth_method": "bearer_token",
+            "subscribed_events": ["ag.access_pass.issued"],
+            "created_at": "2025-03-01T00:00:00Z",
+            "private_key": "secret-key-123"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.Webhooks.CreateAsync(new CreateWebhookRequest
+        {
+            Name = "New Webhook",
+            Url = "https://example.com/hook",
+            SubscribedEvents = new List<string> { "ag.access_pass.issued" }
+        });
+
+        Assert.That(result.Id, Is.EqualTo("wh_new"));
+        Assert.That(result.PrivateKey, Is.EqualTo("secret-key-123"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/webhooks")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task WebhooksDeleteAsync_ShouldDeleteWebhook()
+    {
+        StubHttpResponse("{}");
+
+        await _client.Console.Webhooks.DeleteAsync("wh_123");
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Delete &&
+            req.RequestUri!.ToString().Contains("/v1/console/webhooks/wh_123")
+        )), Times.Once);
+    }
+
+    #endregion
+
+    #region HIDOrgsService
+
+    [Test]
+    public async Task HIDOrgsCreateAsync_ShouldCreateOrg()
+    {
+        var json = """
+        {
+            "id": "org_1",
+            "name": "My Org",
+            "slug": "my-org",
+            "first_name": "Ada",
+            "last_name": "Lovelace",
+            "phone": "+1-555-0000",
+            "full_address": "1 Main St, NY NY",
+            "status": "pending",
+            "created_at": "2025-03-01T00:00:00Z"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.HID.Orgs.CreateAsync(new CreateHIDOrgRequest
+        {
+            Name = "My Org",
+            FullAddress = "1 Main St, NY NY",
+            Phone = "+1-555-0000",
+            FirstName = "Ada",
+            LastName = "Lovelace"
+        });
+
+        Assert.That(result.Id, Is.EqualTo("org_1"));
+        Assert.That(result.Name, Is.EqualTo("My Org"));
+        Assert.That(result.Slug, Is.EqualTo("my-org"));
+        Assert.That(result.FirstName, Is.EqualTo("Ada"));
+        Assert.That(result.Status, Is.EqualTo("pending"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/hid/orgs")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task HIDOrgsListAsync_ShouldReturnOrgs()
+    {
+        var json = """
+        [
+            {
+                "id": "org_1",
+                "name": "Org One",
+                "slug": "org-one",
+                "first_name": "Ada",
+                "last_name": "Lovelace",
+                "phone": "+1-555-0000",
+                "full_address": "1 Main St",
+                "status": "active",
+                "created_at": "2025-03-01T00:00:00Z"
+            },
+            {
+                "id": "org_2",
+                "name": "Org Two",
+                "slug": "org-two",
+                "first_name": "Bob",
+                "last_name": "Smith",
+                "phone": "+1-555-1111",
+                "full_address": "2 Main St",
+                "status": "pending",
+                "created_at": "2025-03-02T00:00:00Z"
+            }
+        ]
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.HID.Orgs.ListAsync();
+
+        Assert.That(result, Has.Count.EqualTo(2));
+        Assert.That(result[0].Id, Is.EqualTo("org_1"));
+        Assert.That(result[0].Name, Is.EqualTo("Org One"));
+        Assert.That(result[1].Id, Is.EqualTo("org_2"));
+        Assert.That(result[1].Status, Is.EqualTo("pending"));
+    }
+
+    [Test]
+    public async Task HIDOrgsListAsync_ShouldHandleEmptyList()
+    {
+        StubHttpResponse("[]");
+
+        var result = await _client.Console.HID.Orgs.ListAsync();
+
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
+    public async Task HIDOrgsActivateAsync_ShouldCompleteRegistration()
+    {
+        var json = """
+        {
+            "id": "org_1",
+            "name": "My Org",
+            "slug": "my-org",
+            "first_name": "Ada",
+            "last_name": "Lovelace",
+            "phone": "+1-555-0000",
+            "full_address": "1 Main St",
+            "status": "active",
+            "created_at": "2025-03-01T00:00:00Z"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.HID.Orgs.ActivateAsync(new CompleteHIDOrgRequest
+        {
+            Email = "admin@example.com",
+            Password = "hid-password-123"
+        });
+
+        Assert.That(result.Id, Is.EqualTo("org_1"));
+        Assert.That(result.Name, Is.EqualTo("My Org"));
+        Assert.That(result.Status, Is.EqualTo("active"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/hid/orgs/activate")
+        )), Times.Once);
     }
 
     #endregion
