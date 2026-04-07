@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.3.0
+Install-Package accessgrid -Version 1.4.0
 ```
 
 ## Authentication
@@ -446,6 +446,143 @@ public async Task GenerateProvisioningCredentialsAsync()
     Console.WriteLine($"Sharing Instance ID: {response.SharingInstanceIdentifier}");
     Console.WriteLine($"Card Template ID: {response.CardTemplateIdentifier}");
     Console.WriteLine($"Environment ID: {response.EnvironmentIdentifier}");
+}
+```
+
+### Landing Pages
+
+#### List Landing Pages
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task ListLandingPagesAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    var landingPages = await client.Console.ListLandingPagesAsync();
+
+    foreach (var page in landingPages)
+    {
+        Console.WriteLine($"ID: {page.Id}, Name: {page.Name}, Kind: {page.Kind}");
+        Console.WriteLine($"  Password Protected: {page.PasswordProtected}");
+        if (page.LogoUrl != null)
+            Console.WriteLine($"  Logo URL: {page.LogoUrl}");
+    }
+}
+```
+
+#### Create a Landing Page
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task CreateLandingPageAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    var landingPage = await client.Console.CreateLandingPageAsync(new CreateLandingPageRequest
+    {
+        Name = "Miami Office Access Pass",
+        Kind = "universal",
+        AdditionalText = "Welcome to the Miami Office",
+        BgColor = "#f1f5f9",
+        AllowImmediateDownload = true
+    });
+
+    Console.WriteLine($"Landing page created: {landingPage.Id}");
+    Console.WriteLine($"Name: {landingPage.Name}, Kind: {landingPage.Kind}");
+}
+```
+
+#### Update a Landing Page
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task UpdateLandingPageAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    var landingPage = await client.Console.UpdateLandingPageAsync("0xlandingpage1d", new UpdateLandingPageRequest
+    {
+        Name = "Updated Miami Office Access Pass",
+        AdditionalText = "Welcome! Tap below to get your access pass.",
+        BgColor = "#e2e8f0"
+    });
+
+    Console.WriteLine($"Landing page updated: {landingPage.Id}");
+    Console.WriteLine($"Name: {landingPage.Name}");
+}
+```
+
+### Credential Profiles
+
+#### List Credential Profiles
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task ListProfilesAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    var profiles = await client.Console.CredentialProfiles.ListAsync();
+
+    foreach (var profile in profiles)
+    {
+        Console.WriteLine($"ID: {profile.Id}, Name: {profile.Name}, AID: {profile.Aid}");
+    }
+}
+```
+
+#### Create a Credential Profile
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task CreateProfileAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    var profile = await client.Console.CredentialProfiles.CreateAsync(new CreateCredentialProfileRequest
+    {
+        Name = "Main Office Profile",
+        AppName = "KEY-ID-main",
+        Keys = new[]
+        {
+            new KeyParam { Value = "your_32_char_hex_master_key_here" },
+            new KeyParam { Value = "your_32_char_hex__read_key__here" }
+        }
+    });
+
+    Console.WriteLine($"Profile created: {profile.Id}");
+    Console.WriteLine($"AID: {profile.Aid}");
 }
 ```
 
@@ -909,6 +1046,11 @@ public class AccessCardsApiTests
 | GET /v1/console/pass-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
 | POST /v1/console/card-templates/{id}/ios_preflight | `Console.IosPreflightAsync()` | Y |
 | GET /v1/console/ledger-items | `Console.GetLedgerItemsAsync()` | Y |
+| GET /v1/console/landing-pages | `Console.ListLandingPagesAsync()` | Y |
+| POST /v1/console/landing-pages | `Console.CreateLandingPageAsync()` | Y |
+| PUT /v1/console/landing-pages/{id} | `Console.UpdateLandingPageAsync()` | Y |
+| GET /v1/console/credential-profiles | `Console.CredentialProfiles.ListAsync()` | Y |
+| POST /v1/console/credential-profiles | `Console.CredentialProfiles.CreateAsync()` | Y |
 | GET /v1/console/webhooks | `Console.Webhooks.ListAsync()` | Y |
 | POST /v1/console/webhooks | `Console.Webhooks.CreateAsync()` | Y |
 | DELETE /v1/console/webhooks/{id} | `Console.Webhooks.DeleteAsync()` | Y |
