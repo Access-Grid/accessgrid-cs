@@ -121,6 +121,48 @@ namespace AccessGrid
         public string Title { get; set; }
 
         /// <summary>
+        /// Name of the organization the employee belongs to
+        /// </summary>
+        [JsonPropertyName("organization_name")]
+        public string OrganizationName { get; set; }
+
+        /// <summary>
+        /// Department within the organization
+        /// </summary>
+        [JsonPropertyName("department")]
+        public string Department { get; set; }
+
+        /// <summary>
+        /// Location or office name
+        /// </summary>
+        [JsonPropertyName("location")]
+        public string Location { get; set; }
+
+        /// <summary>
+        /// Site name (e.g., building or campus)
+        /// </summary>
+        [JsonPropertyName("site_name")]
+        public string SiteName { get; set; }
+
+        /// <summary>
+        /// Workstation identifier
+        /// </summary>
+        [JsonPropertyName("workstation")]
+        public string Workstation { get; set; }
+
+        /// <summary>
+        /// Mail stop code
+        /// </summary>
+        [JsonPropertyName("mail_stop")]
+        public string MailStop { get; set; }
+
+        /// <summary>
+        /// Company address
+        /// </summary>
+        [JsonPropertyName("company_address")]
+        public string CompanyAddress { get; set; }
+
+        /// <summary>
         /// ISO8601 timestamp when the card becomes active
         /// </summary>
         [JsonPropertyName("start_date")]
@@ -1035,5 +1077,197 @@ namespace AccessGrid
 
         [JsonPropertyName("hid_org_id")]
         public string HIDOrgId { get; set; }
+    }
+
+    /// <summary>
+    /// A landing page configuration
+    /// </summary>
+    public class LandingPage
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public string CreatedAt { get; set; }
+
+        [JsonPropertyName("kind")]
+        public string Kind { get; set; }
+
+        [JsonPropertyName("password_protected")]
+        public bool PasswordProtected { get; set; }
+
+        [JsonPropertyName("logo_url")]
+        public string LogoUrl { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for creating a landing page
+    /// </summary>
+    public class CreateLandingPageRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("kind")]
+        public string Kind { get; set; }
+
+        [JsonPropertyName("additional_text")]
+        public string AdditionalText { get; set; }
+
+        [JsonPropertyName("bg_color")]
+        public string BgColor { get; set; }
+
+        [JsonPropertyName("allow_immediate_download")]
+        public bool? AllowImmediateDownload { get; set; }
+
+        [JsonPropertyName("password")]
+        public string Password { get; set; }
+
+        [JsonPropertyName("is_2fa_enabled")]
+        public bool? Is2faEnabled { get; set; }
+
+        [JsonPropertyName("logo")]
+        public string Logo { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for updating a landing page
+    /// </summary>
+    public class UpdateLandingPageRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("additional_text")]
+        public string AdditionalText { get; set; }
+
+        [JsonPropertyName("bg_color")]
+        public string BgColor { get; set; }
+
+        [JsonPropertyName("allow_immediate_download")]
+        public bool? AllowImmediateDownload { get; set; }
+
+        [JsonPropertyName("password")]
+        public string Password { get; set; }
+
+        [JsonPropertyName("is_2fa_enabled")]
+        public bool? Is2faEnabled { get; set; }
+
+        [JsonPropertyName("logo")]
+        public string Logo { get; set; }
+    }
+
+    /// <summary>
+    /// A key within a credential profile
+    /// </summary>
+    public class CredentialProfileKey
+    {
+        [JsonPropertyName("ex_id")]
+        public string ExId { get; set; }
+
+        [JsonPropertyName("label")]
+        public string Label { get; set; }
+
+        [JsonPropertyName("keys_diversified")]
+        public bool KeysDiversified { get; set; }
+
+        [JsonPropertyName("source_key_index")]
+        public int? SourceKeyIndex { get; set; }
+    }
+
+    /// <summary>
+    /// A file within a credential profile
+    /// </summary>
+    public class CredentialProfileFile
+    {
+        [JsonPropertyName("ex_id")]
+        public string ExId { get; set; }
+
+        [JsonPropertyName("file_type")]
+        public string FileType { get; set; }
+
+        [JsonPropertyName("file_size")]
+        public int FileSize { get; set; }
+
+        [JsonPropertyName("communication_settings")]
+        public string CommunicationSettings { get; set; }
+
+        [JsonPropertyName("read_rights")]
+        public string ReadRights { get; set; }
+
+        [JsonPropertyName("write_rights")]
+        public string WriteRights { get; set; }
+
+        [JsonPropertyName("read_write_rights")]
+        public string ReadWriteRights { get; set; }
+
+        [JsonPropertyName("change_rights")]
+        public string ChangeRights { get; set; }
+    }
+
+    /// <summary>
+    /// A credential profile
+    /// </summary>
+    public class CredentialProfile
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("aid")]
+        public string Aid { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("apple_id")]
+        public string AppleId { get; set; }
+
+        [JsonPropertyName("created_at")]
+        public string CreatedAt { get; set; }
+
+        [JsonPropertyName("card_storage")]
+        public string CardStorage { get; set; }
+
+        [JsonPropertyName("keys")]
+        public List<CredentialProfileKey> Keys { get; set; }
+
+        [JsonPropertyName("files")]
+        public List<CredentialProfileFile> Files { get; set; }
+    }
+
+    /// <summary>
+    /// A key parameter for creating a credential profile
+    /// </summary>
+    public class KeyParam
+    {
+        [JsonPropertyName("value")]
+        public string Value { get; set; }
+
+        [JsonPropertyName("keys_diversified")]
+        public bool? KeysDiversified { get; set; }
+
+        [JsonPropertyName("source_key_index")]
+        public int? SourceKeyIndex { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for creating a credential profile
+    /// </summary>
+    public class CreateCredentialProfileRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("app_name")]
+        public string AppName { get; set; }
+
+        [JsonPropertyName("file_id")]
+        public string FileId { get; set; }
+
+        [JsonPropertyName("keys")]
+        public KeyParam[] Keys { get; set; }
     }
 }

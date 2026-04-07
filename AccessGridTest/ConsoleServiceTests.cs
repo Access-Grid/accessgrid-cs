@@ -953,4 +953,285 @@ public class ConsoleServiceTests
     }
 
     #endregion
+
+    #region LandingPages
+
+    [Test]
+    public async Task ListLandingPagesAsync_ShouldReturnLandingPages()
+    {
+        var json = """
+        [
+            {
+                "id": "lp_1",
+                "name": "Miami Office",
+                "created_at": "2025-03-01T00:00:00Z",
+                "kind": "universal",
+                "password_protected": false,
+                "logo_url": "https://example.com/logo.png"
+            },
+            {
+                "id": "lp_2",
+                "name": "NYC Office",
+                "created_at": "2025-03-02T00:00:00Z",
+                "kind": "universal",
+                "password_protected": true,
+                "logo_url": null
+            }
+        ]
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.ListLandingPagesAsync();
+
+        Assert.That(result, Has.Count.EqualTo(2));
+        Assert.That(result[0].Id, Is.EqualTo("lp_1"));
+        Assert.That(result[0].Name, Is.EqualTo("Miami Office"));
+        Assert.That(result[0].Kind, Is.EqualTo("universal"));
+        Assert.That(result[0].PasswordProtected, Is.False);
+        Assert.That(result[0].LogoUrl, Is.EqualTo("https://example.com/logo.png"));
+        Assert.That(result[1].PasswordProtected, Is.True);
+        Assert.That(result[1].LogoUrl, Is.Null);
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Get &&
+            req.RequestUri!.ToString().Contains("/v1/console/landing-pages")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task ListLandingPagesAsync_ShouldHandleEmptyList()
+    {
+        StubHttpResponse("[]");
+
+        var result = await _client.Console.ListLandingPagesAsync();
+
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
+    public async Task CreateLandingPageAsync_ShouldCreateLandingPage()
+    {
+        var json = """
+        {
+            "id": "lp_new",
+            "name": "Miami Office Access Pass",
+            "created_at": "2025-03-01T00:00:00Z",
+            "kind": "universal",
+            "password_protected": false,
+            "logo_url": null
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.CreateLandingPageAsync(new CreateLandingPageRequest
+        {
+            Name = "Miami Office Access Pass",
+            Kind = "universal",
+            AdditionalText = "Welcome to the Miami Office",
+            BgColor = "#f1f5f9",
+            AllowImmediateDownload = true
+        });
+
+        Assert.That(result.Id, Is.EqualTo("lp_new"));
+        Assert.That(result.Name, Is.EqualTo("Miami Office Access Pass"));
+        Assert.That(result.Kind, Is.EqualTo("universal"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/landing-pages")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task UpdateLandingPageAsync_ShouldUpdateLandingPage()
+    {
+        var json = """
+        {
+            "id": "lp_1",
+            "name": "Updated Miami Office",
+            "created_at": "2025-03-01T00:00:00Z",
+            "kind": "universal",
+            "password_protected": false,
+            "logo_url": null
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.UpdateLandingPageAsync("lp_1", new UpdateLandingPageRequest
+        {
+            Name = "Updated Miami Office",
+            AdditionalText = "Welcome! Tap below to get your access pass.",
+            BgColor = "#e2e8f0"
+        });
+
+        Assert.That(result.Id, Is.EqualTo("lp_1"));
+        Assert.That(result.Name, Is.EqualTo("Updated Miami Office"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Put &&
+            req.RequestUri!.ToString().Contains("/v1/console/landing-pages/lp_1")
+        )), Times.Once);
+    }
+
+    #endregion
+
+    #region CredentialProfilesService
+
+    [Test]
+    public async Task CredentialProfilesListAsync_ShouldReturnProfiles()
+    {
+        var json = """
+        [
+            {
+                "id": "cp_1",
+                "aid": "F0394148",
+                "name": "Main Office Profile",
+                "apple_id": "apple-123",
+                "created_at": "2025-03-01T00:00:00Z",
+                "card_storage": "2K",
+                "keys": [
+                    { "ex_id": "key_1", "label": "Master Key", "keys_diversified": true, "source_key_index": 0 }
+                ],
+                "files": [
+                    { "ex_id": "file_1", "file_type": "Standard", "file_size": 32, "communication_settings": "Full", "read_rights": "key_1", "write_rights": "key_1", "read_write_rights": "key_1", "change_rights": "key_1" }
+                ]
+            }
+        ]
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.CredentialProfiles.ListAsync();
+
+        Assert.That(result, Has.Count.EqualTo(1));
+        Assert.That(result[0].Id, Is.EqualTo("cp_1"));
+        Assert.That(result[0].Aid, Is.EqualTo("F0394148"));
+        Assert.That(result[0].Name, Is.EqualTo("Main Office Profile"));
+        Assert.That(result[0].AppleId, Is.EqualTo("apple-123"));
+        Assert.That(result[0].CardStorage, Is.EqualTo("2K"));
+        Assert.That(result[0].Keys, Has.Count.EqualTo(1));
+        Assert.That(result[0].Keys[0].ExId, Is.EqualTo("key_1"));
+        Assert.That(result[0].Keys[0].KeysDiversified, Is.True);
+        Assert.That(result[0].Files, Has.Count.EqualTo(1));
+        Assert.That(result[0].Files[0].FileType, Is.EqualTo("Standard"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Get &&
+            req.RequestUri!.ToString().Contains("/v1/console/credential-profiles")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task CredentialProfilesListAsync_ShouldHandleEmptyList()
+    {
+        StubHttpResponse("[]");
+
+        var result = await _client.Console.CredentialProfiles.ListAsync();
+
+        Assert.That(result, Is.Empty);
+    }
+
+    [Test]
+    public async Task CredentialProfilesCreateAsync_ShouldCreateProfile()
+    {
+        var json = """
+        {
+            "id": "cp_new",
+            "aid": "F0394148",
+            "name": "Main Office Profile",
+            "apple_id": null,
+            "created_at": "2025-03-01T00:00:00Z",
+            "card_storage": "2K",
+            "keys": [
+                { "ex_id": "key_1", "label": "Master Key", "keys_diversified": false, "source_key_index": null },
+                { "ex_id": "key_2", "label": "Read Key", "keys_diversified": false, "source_key_index": null }
+            ],
+            "files": []
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.CredentialProfiles.CreateAsync(new CreateCredentialProfileRequest
+        {
+            Name = "Main Office Profile",
+            AppName = "KEY-ID-main",
+            Keys = new[]
+            {
+                new KeyParam { Value = "your_32_char_hex_master_key_here" },
+                new KeyParam { Value = "your_32_char_hex__read_key__here" }
+            }
+        });
+
+        Assert.That(result.Id, Is.EqualTo("cp_new"));
+        Assert.That(result.Aid, Is.EqualTo("F0394148"));
+        Assert.That(result.Name, Is.EqualTo("Main Office Profile"));
+        Assert.That(result.Keys, Has.Count.EqualTo(2));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/credential-profiles")
+        )), Times.Once);
+    }
+
+    #endregion
+
+    #region AccessCard New Fields
+
+    [Test]
+    public async Task AccessCard_ShouldDeserializeNewFields()
+    {
+        var json = """
+        {
+            "id": "card_1",
+            "install_url": "https://install.example.com/card_1",
+            "state": "active",
+            "full_name": "Jane Doe",
+            "organization_name": "Acme Corp",
+            "title": "Engineering Manager",
+            "department": "Engineering",
+            "location": "San Francisco",
+            "site_name": "HQ Building A",
+            "workstation": "4F-207",
+            "mail_stop": "MS-401",
+            "company_address": "123 Main St, San Francisco, CA 94105"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.AccessCards.GetAsync("card_1");
+
+        Assert.That(result.OrganizationName, Is.EqualTo("Acme Corp"));
+        Assert.That(result.Title, Is.EqualTo("Engineering Manager"));
+        Assert.That(result.Department, Is.EqualTo("Engineering"));
+        Assert.That(result.Location, Is.EqualTo("San Francisco"));
+        Assert.That(result.SiteName, Is.EqualTo("HQ Building A"));
+        Assert.That(result.Workstation, Is.EqualTo("4F-207"));
+        Assert.That(result.MailStop, Is.EqualTo("MS-401"));
+        Assert.That(result.CompanyAddress, Is.EqualTo("123 Main St, San Francisco, CA 94105"));
+    }
+
+    [Test]
+    public async Task AccessCard_NewFieldsAreNullWhenAbsent()
+    {
+        var json = """
+        {
+            "id": "card_2",
+            "install_url": "https://install.example.com/card_2",
+            "state": "active",
+            "full_name": "John Smith"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.AccessCards.GetAsync("card_2");
+
+        Assert.That(result.OrganizationName, Is.Null);
+        Assert.That(result.Department, Is.Null);
+        Assert.That(result.Location, Is.Null);
+        Assert.That(result.SiteName, Is.Null);
+        Assert.That(result.Workstation, Is.Null);
+        Assert.That(result.MailStop, Is.Null);
+        Assert.That(result.CompanyAddress, Is.Null);
+    }
+
+    #endregion
 }
