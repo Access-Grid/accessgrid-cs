@@ -1134,6 +1134,9 @@ namespace AccessGrid
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Must be `universal` or `personalized`
+        /// </summary>
         [JsonPropertyName("kind")]
         public string Kind { get; set; }
 
