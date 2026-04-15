@@ -1186,6 +1186,33 @@ public class ConsoleServiceTests
     }
 
     [Test]
+    public async Task CredentialProfilesListAsync_HandlesNullNumericFields()
+    {
+        // The API can return null for keys_diversified and file_size; the SDK
+        // previously typed these as non-nullable bool/int and crashed.
+        var json = """
+        [
+            {
+                "id": "cp_1",
+                "name": "Profile",
+                "keys": [
+                    { "ex_id": "key_1", "label": "Master Key", "keys_diversified": null, "source_key_index": null }
+                ],
+                "files": [
+                    { "ex_id": "file_1", "file_type": "Standard", "file_size": null }
+                ]
+            }
+        ]
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.CredentialProfiles.ListAsync();
+
+        Assert.That(result[0].Keys[0].KeysDiversified, Is.Null);
+        Assert.That(result[0].Files[0].FileSize, Is.Null);
+    }
+
+    [Test]
     public async Task CredentialProfilesListAsync_ShouldHandleEmptyList()
     {
         StubHttpResponse("[]");
