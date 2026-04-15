@@ -67,10 +67,10 @@ namespace AccessGrid
         public async Task<List<AccessCard>> ListAsync(ListKeysRequest request)
         {
             var queryParams = new Dictionary<string, string>();
-            
+
             if (!string.IsNullOrEmpty(request.TemplateId))
                 queryParams.Add("template_id", request.TemplateId);
-            
+
             if (!string.IsNullOrEmpty(request.State))
                 queryParams.Add("state", request.State);
 

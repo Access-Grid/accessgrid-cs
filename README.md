@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.4.0
+Install-Package accessgrid -Version 1.5.0
 ```
 
 ## Authentication
@@ -350,14 +350,14 @@ public async Task GetEventLogAsync()
 }
 ```
 
-### Listing Pass Template Pairs
+### Listing Card Template Pairs
 
 ```csharp
 using AccessGrid;
 using System;
 using System.Threading.Tasks;
 
-public async Task ListPassTemplatePairsAsync()
+public async Task ListCardTemplatePairsAsync()
 {
    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
@@ -365,9 +365,9 @@ public async Task ListPassTemplatePairsAsync()
    using var client = new AccessGridClient(accountId, secretKey);
 
    // List first page with default page size (50)
-   var result = await client.Console.ListPassTemplatePairsAsync();
+   var result = await client.Console.ListCardTemplatePairsAsync();
 
-   foreach (var pair in result.PassTemplatePairs)
+   foreach (var pair in result.CardTemplatePairs)
    {
        Console.WriteLine($"Pair: {pair.Name} ({pair.Id})");
        Console.WriteLine($"  iOS: {pair.IosTemplate?.Name ?? "none"}");
@@ -377,7 +377,33 @@ public async Task ListPassTemplatePairsAsync()
    Console.WriteLine($"Page {result.Pagination.CurrentPage} of {result.Pagination.TotalPages}");
 
    // Or with pagination
-   var page2 = await client.Console.ListPassTemplatePairsAsync(page: 2, perPage: 10);
+   var page2 = await client.Console.ListCardTemplatePairsAsync(page: 2, perPage: 10);
+}
+```
+
+### Creating a Card Template Pair
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task CreateCardTemplatePairAsync()
+{
+   var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+   var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+   using var client = new AccessGridClient(accountId, secretKey);
+
+   // Both templates must be published (status: ready) and use the same protocol.
+   var pair = await client.Console.CreateCardTemplatePairAsync(new CreateCardTemplatePairRequest
+   {
+       Name = "Employee Badge Pair",
+       AppleCardTemplateId = "0xapplet3mp14t3",
+       GoogleCardTemplateId = "0xgoogl3t3mp14t3"
+   });
+
+   Console.WriteLine($"Created pair: {pair.Name} ({pair.Id})");
 }
 ```
 
@@ -1043,7 +1069,8 @@ public class AccessCardsApiTests
 | PUT /v1/console/card-templates/{id} | `Console.UpdateTemplateAsync()` | Y |
 | GET /v1/console/card-templates/{id} | `Console.ReadTemplateAsync()` | Y |
 | GET /v1/console/card-templates/{id}/logs | `Console.EventLogAsync()` | Y |
-| GET /v1/console/pass-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
+| GET /v1/console/card-template-pairs | `Console.ListCardTemplatePairsAsync()` | Y |
+| POST /v1/console/card-template-pairs | `Console.CreateCardTemplatePairAsync()` | Y |
 | POST /v1/console/card-templates/{id}/ios_preflight | `Console.IosPreflightAsync()` | Y |
 | GET /v1/console/ledger-items | `Console.GetLedgerItemsAsync()` | Y |
 | GET /v1/console/landing-pages | `Console.ListLandingPagesAsync()` | Y |

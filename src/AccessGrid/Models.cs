@@ -41,12 +41,12 @@ namespace AccessGrid
 
         [JsonPropertyName("id")]
         public string Id { get; private set; }
-        
+
         [JsonPropertyName("install_url")]
         public string Url { get; private set; }
 
         [JsonPropertyName("state")]
-        public AccessPassState? State { get; private set;  }
+        public AccessPassState? State { get; private set; }
 
         /// <summary>
         /// Unique identifier for the card template to use
@@ -220,7 +220,7 @@ namespace AccessGrid
         /// False by default. Set to true if you'd like to enable the NFC keys issued using this template to exist on multiple devices
         /// </summary>
         [JsonPropertyName("allow_on_multiple_devices")]
-        public bool? AllowOnMultipleDevices { get; private set;}
+        public bool? AllowOnMultipleDevices { get; private set; }
 
         [JsonPropertyName("details")]
         public IReadOnlyList<AccessCard> Details { get; set; }
@@ -651,12 +651,15 @@ namespace AccessGrid
     }
 
     /// <summary>
-    /// Lightweight template reference within a pass template pair
+    /// Lightweight template reference within a card template pair
     /// </summary>
-    public class PassTemplatePairInfo
+    public class CardTemplatePairInfo
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }
+
+        [JsonPropertyName("ex_id")]
+        public string ExId { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
@@ -666,12 +669,15 @@ namespace AccessGrid
     }
 
     /// <summary>
-    /// A paired iOS/Android pass template configuration
+    /// A paired iOS/Android card template configuration
     /// </summary>
-    public class PassTemplatePair
+    public class CardTemplatePair
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }
+
+        [JsonPropertyName("ex_id")]
+        public string ExId { get; set; }
 
         [JsonPropertyName("name")]
         public string Name { get; set; }
@@ -680,22 +686,37 @@ namespace AccessGrid
         public DateTime? CreatedAt { get; set; }
 
         [JsonPropertyName("android_template")]
-        public PassTemplatePairInfo AndroidTemplate { get; set; }
+        public CardTemplatePairInfo AndroidTemplate { get; set; }
 
         [JsonPropertyName("ios_template")]
-        public PassTemplatePairInfo IosTemplate { get; set; }
+        public CardTemplatePairInfo IosTemplate { get; set; }
     }
 
     /// <summary>
-    /// Response wrapper for listing pass template pairs
+    /// Response wrapper for listing card template pairs
     /// </summary>
-    public class PassTemplatePairsResponse
+    public class CardTemplatePairsResponse
     {
-        [JsonPropertyName("pass_template_pairs")]
-        public List<PassTemplatePair> PassTemplatePairs { get; set; } = new List<PassTemplatePair>();
+        [JsonPropertyName("card_template_pairs")]
+        public List<CardTemplatePair> CardTemplatePairs { get; set; } = new List<CardTemplatePair>();
 
         [JsonPropertyName("pagination")]
         public PaginationInfo Pagination { get; set; }
+    }
+
+    /// <summary>
+    /// Request to create a card template pair
+    /// </summary>
+    public class CreateCardTemplatePairRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("apple_card_template_id")]
+        public string AppleCardTemplateId { get; set; }
+
+        [JsonPropertyName("google_card_template_id")]
+        public string GoogleCardTemplateId { get; set; }
     }
 
     /// <summary>
@@ -1058,7 +1079,7 @@ namespace AccessGrid
     /// <summary>
     /// The CloudEvents data of a card template webhook event
     /// </summary>
-    public class  CardTemplateEvent
+    public class CardTemplateEvent
     {
         [JsonPropertyName("card_template_id")]
         public string Id { get; set; }

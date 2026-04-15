@@ -75,18 +75,18 @@ namespace AccessGrid
         public async Task<List<EventLogEntry>> EventLogAsync(string templateId, EventLogFilters filters = null)
         {
             var queryParams = new Dictionary<string, string>();
-            
+
             if (filters != null)
             {
                 if (!string.IsNullOrEmpty(filters.Device))
                     queryParams.Add("device", filters.Device);
-                
+
                 if (filters.StartDate.HasValue)
                     queryParams.Add("start_date", filters.StartDate.Value.ToString("o"));
-                
+
                 if (filters.EndDate.HasValue)
                     queryParams.Add("end_date", filters.EndDate.Value.ToString("o"));
-                
+
                 if (!string.IsNullOrEmpty(filters.EventType))
                     queryParams.Add("event_type", filters.EventType);
             }
@@ -96,12 +96,12 @@ namespace AccessGrid
         }
 
         /// <summary>
-        /// Lists pass template pairs (enterprise only)
+        /// Lists card template pairs (enterprise only)
         /// </summary>
         /// <param name="page">Page number (defaults to 1 on the server)</param>
         /// <param name="perPage">Items per page, max 100 (defaults to 50 on the server)</param>
-        /// <returns>Pass template pairs with pagination info</returns>
-        public async Task<PassTemplatePairsResponse> ListPassTemplatePairsAsync(int? page = null, int? perPage = null)
+        /// <returns>Card template pairs with pagination info</returns>
+        public async Task<CardTemplatePairsResponse> ListCardTemplatePairsAsync(int? page = null, int? perPage = null)
         {
             var queryParams = new Dictionary<string, string>();
 
@@ -111,8 +111,20 @@ namespace AccessGrid
             if (perPage.HasValue)
                 queryParams.Add("per_page", perPage.Value.ToString());
 
-            var response = await _apiService.GetAsync<PassTemplatePairsResponse>("/v1/console/pass-template-pairs", queryParams);
-            return response ?? new PassTemplatePairsResponse();
+            var response = await _apiService.GetAsync<CardTemplatePairsResponse>("/v1/console/card-template-pairs", queryParams);
+            return response ?? new CardTemplatePairsResponse();
+        }
+
+        /// <summary>
+        /// Creates a card template pair linking an Apple (iOS) and Google (Android) card template.
+        /// Both templates must be published (status: ready) and use the same protocol.
+        /// </summary>
+        /// <param name="request">Pair creation parameters</param>
+        /// <returns>The created card template pair</returns>
+        public async Task<CardTemplatePair> CreateCardTemplatePairAsync(CreateCardTemplatePairRequest request)
+        {
+            var response = await _apiService.PostAsync<CardTemplatePair>("/v1/console/card-template-pairs", request);
+            return response;
         }
 
         /// <summary>

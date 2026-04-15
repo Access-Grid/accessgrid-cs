@@ -36,24 +36,26 @@ public class ConsoleServiceTests
     }
 
     [Test]
-    public async Task ListPassTemplatePairsAsync_ReturnsPassTemplatePairs()
+    public async Task ListCardTemplatePairsAsync_ReturnsCardTemplatePairs()
     {
-        // Same fixture as Ruby console_spec.rb #list_pass_template_pairs
+        // Same fixture as Ruby console_spec.rb #list_card_template_pairs
         var json = """
         {
-            "pass_template_pairs": [
+            "card_template_pairs": [
                 {
                     "id": "pair_1",
+                    "ex_id": "pair_1",
                     "name": "Employee Badge Pair",
                     "created_at": "2025-01-01T00:00:00Z",
-                    "ios_template": { "id": "tmpl_ios_1", "name": "iOS Badge", "platform": "apple" },
-                    "android_template": { "id": "tmpl_android_1", "name": "Android Badge", "platform": "android" }
+                    "ios_template": { "id": "tmpl_ios_1", "ex_id": "tmpl_ios_1", "name": "iOS Badge", "platform": "apple" },
+                    "android_template": { "id": "tmpl_android_1", "ex_id": "tmpl_android_1", "name": "Android Badge", "platform": "android" }
                 },
                 {
                     "id": "pair_2",
+                    "ex_id": "pair_2",
                     "name": "Contractor Badge Pair",
                     "created_at": "2025-01-02T00:00:00Z",
-                    "ios_template": { "id": "tmpl_ios_2", "name": "iOS Contractor", "platform": "apple" },
+                    "ios_template": { "id": "tmpl_ios_2", "ex_id": "tmpl_ios_2", "name": "iOS Contractor", "platform": "apple" },
                     "android_template": null
                 }
             ],
@@ -67,20 +69,22 @@ public class ConsoleServiceTests
         """;
         StubHttpResponse(json);
 
-        var result = await _client.Console.ListPassTemplatePairsAsync();
+        var result = await _client.Console.ListCardTemplatePairsAsync();
 
-        Assert.That(result.PassTemplatePairs, Has.Count.EqualTo(2));
+        Assert.That(result.CardTemplatePairs, Has.Count.EqualTo(2));
 
-        var first = result.PassTemplatePairs[0];
+        var first = result.CardTemplatePairs[0];
         Assert.That(first.Id, Is.EqualTo("pair_1"));
+        Assert.That(first.ExId, Is.EqualTo("pair_1"));
         Assert.That(first.Name, Is.EqualTo("Employee Badge Pair"));
         Assert.That(first.CreatedAt, Is.EqualTo(new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
         Assert.That(first.IosTemplate.Id, Is.EqualTo("tmpl_ios_1"));
+        Assert.That(first.IosTemplate.ExId, Is.EqualTo("tmpl_ios_1"));
         Assert.That(first.IosTemplate.Platform, Is.EqualTo("apple"));
         Assert.That(first.AndroidTemplate.Id, Is.EqualTo("tmpl_android_1"));
         Assert.That(first.AndroidTemplate.Platform, Is.EqualTo("android"));
 
-        var second = result.PassTemplatePairs[1];
+        var second = result.CardTemplatePairs[1];
         Assert.That(second.Id, Is.EqualTo("pair_2"));
         Assert.That(second.AndroidTemplate, Is.Null);
         Assert.That(second.IosTemplate, Is.Not.Null);
@@ -92,20 +96,21 @@ public class ConsoleServiceTests
     }
 
     [Test]
-    public async Task ListPassTemplatePairsAsync_PassesPaginationParams()
+    public async Task ListCardTemplatePairsAsync_PassesPaginationParams()
     {
         var json = """
         {
-            "pass_template_pairs": [],
+            "card_template_pairs": [],
             "pagination": { "current_page": 2, "per_page": 10, "total_pages": 3, "total_count": 25 }
         }
         """;
         StubHttpResponse(json);
 
-        var result = await _client.Console.ListPassTemplatePairsAsync(page: 2, perPage: 10);
+        var result = await _client.Console.ListCardTemplatePairsAsync(page: 2, perPage: 10);
 
         _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
             req.Method == HttpMethod.Get &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-template-pairs") &&
             req.RequestUri!.ToString().Contains("page=2") &&
             req.RequestUri!.ToString().Contains("per_page=10")
         )), Times.Once);
@@ -115,39 +120,74 @@ public class ConsoleServiceTests
     }
 
     [Test]
-    public async Task ListPassTemplatePairsAsync_HandlesEmptyResponse()
+    public async Task ListCardTemplatePairsAsync_HandlesEmptyResponse()
     {
         var json = """
         {
-            "pass_template_pairs": [],
+            "card_template_pairs": [],
             "pagination": { "current_page": 1, "per_page": 50, "total_pages": 0, "total_count": 0 }
         }
         """;
         StubHttpResponse(json);
 
-        var result = await _client.Console.ListPassTemplatePairsAsync();
+        var result = await _client.Console.ListCardTemplatePairsAsync();
 
-        Assert.That(result.PassTemplatePairs, Is.Empty);
+        Assert.That(result.CardTemplatePairs, Is.Empty);
         Assert.That(result.Pagination.TotalCount, Is.EqualTo(0));
     }
 
     [Test]
-    public async Task ListPassTemplatePairsAsync_SetsAuthHeaders()
+    public async Task ListCardTemplatePairsAsync_SetsAuthHeaders()
     {
         var json = """
         {
-            "pass_template_pairs": [],
+            "card_template_pairs": [],
             "pagination": { "current_page": 1, "per_page": 50, "total_pages": 0, "total_count": 0 }
         }
         """;
         StubHttpResponse(json);
 
-        await _client.Console.ListPassTemplatePairsAsync();
+        await _client.Console.ListCardTemplatePairsAsync();
 
         _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
             req.Headers.Contains("X-ACCT-ID") &&
             req.Headers.GetValues("X-ACCT-ID")!.First() == "test_account" &&
             req.Headers.Contains("X-PAYLOAD-SIG")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task CreateCardTemplatePairAsync_PostsAndReturnsPair()
+    {
+        var json = """
+        {
+            "id": "pair_new",
+            "ex_id": "pair_new",
+            "name": "New Badge Pair",
+            "created_at": "2025-04-15T12:00:00Z",
+            "ios_template": { "id": "tmpl_ios", "ex_id": "tmpl_ios", "name": "iOS Badge", "platform": "apple" },
+            "android_template": { "id": "tmpl_android", "ex_id": "tmpl_android", "name": "Android Badge", "platform": "android" }
+        }
+        """;
+        StubHttpResponse(json, HttpStatusCode.Created);
+
+        var result = await _client.Console.CreateCardTemplatePairAsync(new CreateCardTemplatePairRequest
+        {
+            Name = "New Badge Pair",
+            AppleCardTemplateId = "tmpl_ios",
+            GoogleCardTemplateId = "tmpl_android"
+        });
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Id, Is.EqualTo("pair_new"));
+        Assert.That(result.ExId, Is.EqualTo("pair_new"));
+        Assert.That(result.Name, Is.EqualTo("New Badge Pair"));
+        Assert.That(result.IosTemplate.Platform, Is.EqualTo("apple"));
+        Assert.That(result.AndroidTemplate.Platform, Is.EqualTo("android"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-template-pairs")
         )), Times.Once);
     }
 
