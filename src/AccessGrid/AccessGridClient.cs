@@ -163,7 +163,7 @@ namespace AccessGrid
         {
             // Extract resource ID from the endpoint if needed for signature
             string resourceId = null;
-            if (method == HttpMethod.Get || (method == HttpMethod.Post && data == null))
+            if (method == HttpMethod.Get || method == HttpMethod.Delete || (method == HttpMethod.Post && data == null))
             {
                 // Extract the ID from the endpoint - patterns like /resource/{id} or /resource/{id}/action
                 var parts = endpoint.Trim('/').Split('/');
@@ -186,8 +186,9 @@ namespace AccessGrid
             // Special handling for requests with no payload:
             // 1. POST requests with empty body (like unlink/suspend/resume)
             // 2. GET requests
+            // 3. DELETE requests (always have no body)
             string payload;
-            if ((method == HttpMethod.Post && data == null) || method == HttpMethod.Get)
+            if ((method == HttpMethod.Post && data == null) || method == HttpMethod.Get || method == HttpMethod.Delete)
             {
                 // For listing cards endpoint (like what the Python list.py script does)
                 if (method == HttpMethod.Get && endpoint == "/v1/key-cards")
@@ -228,7 +229,7 @@ namespace AccessGrid
 
             // For GET requests or POST requests with empty bodies that need the sig_payload parameter
             // Note: We've already added sig_payload for /v1/key-cards endpoint above
-            if ((method == HttpMethod.Get || (method == HttpMethod.Post && data == null)) && !finalQueryParams.ContainsKey("sig_payload"))
+            if ((method == HttpMethod.Get || method == HttpMethod.Delete || (method == HttpMethod.Post && data == null)) && !finalQueryParams.ContainsKey("sig_payload"))
             {
                 if (!string.IsNullOrEmpty(resourceId) && resourceId != "key-cards" && !resourceId.Contains("templates"))
                 {
@@ -296,6 +297,12 @@ namespace AccessGrid
             if (typeof(T) == typeof(string))
             {
                 return (T)(object)responseContent;
+            }
+
+            // Empty response bodies (e.g. DELETE 204) have nothing to deserialize.
+            if (string.IsNullOrWhiteSpace(responseContent))
+            {
+                return default;
             }
 
             // Deserialize the response
