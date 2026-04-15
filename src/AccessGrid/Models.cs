@@ -1195,7 +1195,7 @@ namespace AccessGrid
         public string Label { get; set; }
 
         [JsonPropertyName("keys_diversified")]
-        public bool KeysDiversified { get; set; }
+        public bool? KeysDiversified { get; set; }
 
         [JsonPropertyName("source_key_index")]
         public int? SourceKeyIndex { get; set; }
@@ -1213,7 +1213,7 @@ namespace AccessGrid
         public string FileType { get; set; }
 
         [JsonPropertyName("file_size")]
-        public int FileSize { get; set; }
+        public int? FileSize { get; set; }
 
         [JsonPropertyName("communication_settings")]
         public string CommunicationSettings { get; set; }
