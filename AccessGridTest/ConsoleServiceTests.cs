@@ -865,6 +865,21 @@ public class ConsoleServiceTests
         )), Times.Once);
     }
 
+    [Test]
+    public async Task WebhooksDeleteAsync_IncludesSigPayloadQueryParam()
+    {
+        // DELETE requests have no body, so the server looks for `sig_payload` in
+        // the query string and verifies the signature against that.
+        StubHttpResponse("{}");
+
+        await _client.Console.Webhooks.DeleteAsync("wh_123");
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Delete &&
+            req.RequestUri!.ToString().Contains("sig_payload=")
+        )), Times.Once);
+    }
+
     #endregion
 
     #region HIDOrgsService
