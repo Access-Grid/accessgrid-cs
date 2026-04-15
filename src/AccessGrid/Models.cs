@@ -778,6 +778,7 @@ namespace AccessGrid
         public DateTime? CreatedAt { get; set; }
 
         [JsonPropertyName("amount")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal Amount { get; set; }
 
         [JsonPropertyName("id")]
