@@ -651,9 +651,9 @@ namespace AccessGrid
     }
 
     /// <summary>
-    /// Lightweight template reference within a card template pair
+    /// Lightweight template reference within a pass template pair
     /// </summary>
-    public class CardTemplatePairInfo
+    public class PassTemplatePairInfo
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }
@@ -669,9 +669,9 @@ namespace AccessGrid
     }
 
     /// <summary>
-    /// A paired iOS/Android card template configuration
+    /// A paired iOS/Android pass template configuration
     /// </summary>
-    public class CardTemplatePair
+    public class PassTemplatePair
     {
         [JsonPropertyName("id")]
         public string Id { get; set; }
@@ -686,28 +686,30 @@ namespace AccessGrid
         public DateTime? CreatedAt { get; set; }
 
         [JsonPropertyName("android_template")]
-        public CardTemplatePairInfo AndroidTemplate { get; set; }
+        public PassTemplatePairInfo AndroidTemplate { get; set; }
 
         [JsonPropertyName("ios_template")]
-        public CardTemplatePairInfo IosTemplate { get; set; }
+        public PassTemplatePairInfo IosTemplate { get; set; }
     }
 
     /// <summary>
-    /// Response wrapper for listing card template pairs
+    /// Response wrapper for listing pass template pairs.
+    /// Maps the upstream "card_template_pairs" JSON key; the C# type/property
+    /// names are preserved for backward compatibility.
     /// </summary>
-    public class CardTemplatePairsResponse
+    public class PassTemplatePairsResponse
     {
         [JsonPropertyName("card_template_pairs")]
-        public List<CardTemplatePair> CardTemplatePairs { get; set; } = new List<CardTemplatePair>();
+        public List<PassTemplatePair> PassTemplatePairs { get; set; } = new List<PassTemplatePair>();
 
         [JsonPropertyName("pagination")]
         public PaginationInfo Pagination { get; set; }
     }
 
     /// <summary>
-    /// Request to create a card template pair
+    /// Request to create a pass template pair
     /// </summary>
-    public class CreateCardTemplatePairRequest
+    public class CreatePassTemplatePairRequest
     {
         [JsonPropertyName("name")]
         public string Name { get; set; }

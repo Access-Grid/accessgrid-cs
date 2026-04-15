@@ -36,9 +36,9 @@ public class ConsoleServiceTests
     }
 
     [Test]
-    public async Task ListCardTemplatePairsAsync_ReturnsCardTemplatePairs()
+    public async Task ListPassTemplatePairsAsync_ReturnsPassTemplatePairs()
     {
-        // Same fixture as Ruby console_spec.rb #list_card_template_pairs
+        // Same fixture as Ruby console_spec.rb #list_pass_template_pairs
         var json = """
         {
             "card_template_pairs": [
@@ -69,11 +69,11 @@ public class ConsoleServiceTests
         """;
         StubHttpResponse(json);
 
-        var result = await _client.Console.ListCardTemplatePairsAsync();
+        var result = await _client.Console.ListPassTemplatePairsAsync();
 
-        Assert.That(result.CardTemplatePairs, Has.Count.EqualTo(2));
+        Assert.That(result.PassTemplatePairs, Has.Count.EqualTo(2));
 
-        var first = result.CardTemplatePairs[0];
+        var first = result.PassTemplatePairs[0];
         Assert.That(first.Id, Is.EqualTo("pair_1"));
         Assert.That(first.ExId, Is.EqualTo("pair_1"));
         Assert.That(first.Name, Is.EqualTo("Employee Badge Pair"));
@@ -84,7 +84,7 @@ public class ConsoleServiceTests
         Assert.That(first.AndroidTemplate.Id, Is.EqualTo("tmpl_android_1"));
         Assert.That(first.AndroidTemplate.Platform, Is.EqualTo("android"));
 
-        var second = result.CardTemplatePairs[1];
+        var second = result.PassTemplatePairs[1];
         Assert.That(second.Id, Is.EqualTo("pair_2"));
         Assert.That(second.AndroidTemplate, Is.Null);
         Assert.That(second.IosTemplate, Is.Not.Null);
@@ -96,7 +96,7 @@ public class ConsoleServiceTests
     }
 
     [Test]
-    public async Task ListCardTemplatePairsAsync_PassesPaginationParams()
+    public async Task ListPassTemplatePairsAsync_PassesPaginationParams()
     {
         var json = """
         {
@@ -106,7 +106,7 @@ public class ConsoleServiceTests
         """;
         StubHttpResponse(json);
 
-        var result = await _client.Console.ListCardTemplatePairsAsync(page: 2, perPage: 10);
+        var result = await _client.Console.ListPassTemplatePairsAsync(page: 2, perPage: 10);
 
         _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
             req.Method == HttpMethod.Get &&
@@ -120,7 +120,7 @@ public class ConsoleServiceTests
     }
 
     [Test]
-    public async Task ListCardTemplatePairsAsync_HandlesEmptyResponse()
+    public async Task ListPassTemplatePairsAsync_HandlesEmptyResponse()
     {
         var json = """
         {
@@ -130,14 +130,14 @@ public class ConsoleServiceTests
         """;
         StubHttpResponse(json);
 
-        var result = await _client.Console.ListCardTemplatePairsAsync();
+        var result = await _client.Console.ListPassTemplatePairsAsync();
 
-        Assert.That(result.CardTemplatePairs, Is.Empty);
+        Assert.That(result.PassTemplatePairs, Is.Empty);
         Assert.That(result.Pagination.TotalCount, Is.EqualTo(0));
     }
 
     [Test]
-    public async Task ListCardTemplatePairsAsync_SetsAuthHeaders()
+    public async Task ListPassTemplatePairsAsync_SetsAuthHeaders()
     {
         var json = """
         {
@@ -147,7 +147,7 @@ public class ConsoleServiceTests
         """;
         StubHttpResponse(json);
 
-        await _client.Console.ListCardTemplatePairsAsync();
+        await _client.Console.ListPassTemplatePairsAsync();
 
         _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
             req.Headers.Contains("X-ACCT-ID") &&
@@ -157,7 +157,7 @@ public class ConsoleServiceTests
     }
 
     [Test]
-    public async Task CreateCardTemplatePairAsync_PostsAndReturnsPair()
+    public async Task CreatePassTemplatePairAsync_PostsAndReturnsPair()
     {
         var json = """
         {
@@ -171,7 +171,7 @@ public class ConsoleServiceTests
         """;
         StubHttpResponse(json, HttpStatusCode.Created);
 
-        var result = await _client.Console.CreateCardTemplatePairAsync(new CreateCardTemplatePairRequest
+        var result = await _client.Console.CreatePassTemplatePairAsync(new CreatePassTemplatePairRequest
         {
             Name = "New Badge Pair",
             AppleCardTemplateId = "tmpl_ios",
