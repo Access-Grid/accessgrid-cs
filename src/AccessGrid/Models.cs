@@ -408,7 +408,7 @@ namespace AccessGrid
         public Platform Platform { get; set; }
 
         /// <summary>
-        /// Must be `employee_badge`
+        /// Must be one of `corporate_id`, `student_id`, `multi_family`, or `hotel`
         /// </summary>
         [JsonPropertyName("use_case")]
         public string UseCase { get; set; }

@@ -234,7 +234,7 @@ public async Task CreateTemplateAsync()
    {
        Name = "Employee Access Pass",
        Platform = "apple",
-       UseCase = "employee_badge",
+       UseCase = "corporate_id",
        Protocol = "desfire",
        AllowOnMultipleDevices = true,
        WatchCount = 2,
