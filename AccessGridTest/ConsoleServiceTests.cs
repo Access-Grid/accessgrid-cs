@@ -566,6 +566,31 @@ public class ConsoleServiceTests
     }
 
     [Test]
+    public async Task GetLedgerItemsAsync_ParsesAmountFromJsonString()
+    {
+        // Rails serializes BigDecimal as a JSON string, not a number.
+        var json = """
+        {
+            "ledger_items": [
+                {
+                    "created_at": "2025-06-15T14:30:00Z",
+                    "amount": "-1.50",
+                    "id": "li_abc123",
+                    "kind": "access_pass_debit"
+                }
+            ],
+            "pagination": { "current_page": 1, "per_page": 50, "total_pages": 1, "total_count": 1 }
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.GetLedgerItemsAsync();
+
+        Assert.That(result.LedgerItems, Has.Count.EqualTo(1));
+        Assert.That(result.LedgerItems[0].Amount, Is.EqualTo(-1.50m));
+    }
+
+    [Test]
     public async Task GetLedgerItemsAsync_PassesDateFilters()
     {
         var json = """
