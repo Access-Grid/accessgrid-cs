@@ -28,7 +28,7 @@ namespace AccessGridExample
                 Console.WriteLine("API Credentials:");
                 Console.WriteLine($"  Account ID: {accountId}");
                 Console.WriteLine($"  Secret Key: {secretKey.Substring(0, 3)}...{secretKey.Substring(secretKey.Length - 3)}");
-                
+
                 // Example 1: List cards
                 Console.WriteLine("\nListing access cards...");
                 var cards = await client.AccessCards.ListAsync(new ListKeysRequest

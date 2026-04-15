@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.4.0
+Install-Package accessgrid -Version 1.5.0
 ```
 
 ## Authentication
@@ -378,6 +378,32 @@ public async Task ListPassTemplatePairsAsync()
 
    // Or with pagination
    var page2 = await client.Console.ListPassTemplatePairsAsync(page: 2, perPage: 10);
+}
+```
+
+### Creating a Pass Template Pair
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task CreatePassTemplatePairAsync()
+{
+   var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+   var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+   using var client = new AccessGridClient(accountId, secretKey);
+
+   // Both templates must be published (status: ready) and use the same protocol.
+   var pair = await client.Console.CreatePassTemplatePairAsync(new CreatePassTemplatePairRequest
+   {
+       Name = "Employee Badge Pair",
+       AppleCardTemplateId = "0xapplet3mp14t3",
+       GoogleCardTemplateId = "0xgoogl3t3mp14t3"
+   });
+
+   Console.WriteLine($"Created pair: {pair.Name} ({pair.Id})");
 }
 ```
 
@@ -1043,7 +1069,8 @@ public class AccessCardsApiTests
 | PUT /v1/console/card-templates/{id} | `Console.UpdateTemplateAsync()` | Y |
 | GET /v1/console/card-templates/{id} | `Console.ReadTemplateAsync()` | Y |
 | GET /v1/console/card-templates/{id}/logs | `Console.EventLogAsync()` | Y |
-| GET /v1/console/pass-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
+| GET /v1/console/card-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
+| POST /v1/console/card-template-pairs | `Console.CreatePassTemplatePairAsync()` | Y |
 | POST /v1/console/card-templates/{id}/ios_preflight | `Console.IosPreflightAsync()` | Y |
 | GET /v1/console/ledger-items | `Console.GetLedgerItemsAsync()` | Y |
 | GET /v1/console/landing-pages | `Console.ListLandingPagesAsync()` | Y |

@@ -75,18 +75,18 @@ namespace AccessGrid
         public async Task<List<EventLogEntry>> EventLogAsync(string templateId, EventLogFilters filters = null)
         {
             var queryParams = new Dictionary<string, string>();
-            
+
             if (filters != null)
             {
                 if (!string.IsNullOrEmpty(filters.Device))
                     queryParams.Add("device", filters.Device);
-                
+
                 if (filters.StartDate.HasValue)
                     queryParams.Add("start_date", filters.StartDate.Value.ToString("o"));
-                
+
                 if (filters.EndDate.HasValue)
                     queryParams.Add("end_date", filters.EndDate.Value.ToString("o"));
-                
+
                 if (!string.IsNullOrEmpty(filters.EventType))
                     queryParams.Add("event_type", filters.EventType);
             }
@@ -111,8 +111,20 @@ namespace AccessGrid
             if (perPage.HasValue)
                 queryParams.Add("per_page", perPage.Value.ToString());
 
-            var response = await _apiService.GetAsync<PassTemplatePairsResponse>("/v1/console/pass-template-pairs", queryParams);
+            var response = await _apiService.GetAsync<PassTemplatePairsResponse>("/v1/console/card-template-pairs", queryParams);
             return response ?? new PassTemplatePairsResponse();
+        }
+
+        /// <summary>
+        /// Creates a pass template pair linking an Apple (iOS) and Google (Android) card template.
+        /// Both templates must be published (status: ready) and use the same protocol.
+        /// </summary>
+        /// <param name="request">Pair creation parameters</param>
+        /// <returns>The created pass template pair</returns>
+        public async Task<PassTemplatePair> CreatePassTemplatePairAsync(CreatePassTemplatePairRequest request)
+        {
+            var response = await _apiService.PostAsync<PassTemplatePair>("/v1/console/card-template-pairs", request);
+            return response;
         }
 
         /// <summary>

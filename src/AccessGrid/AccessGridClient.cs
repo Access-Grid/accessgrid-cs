@@ -43,7 +43,7 @@ namespace AccessGrid
         {
             if (string.IsNullOrEmpty(accountId))
                 throw new ArgumentException("Account ID is required", nameof(accountId));
-            
+
             if (string.IsNullOrEmpty(secretKey))
                 throw new ArgumentException("Secret Key is required", nameof(secretKey));
 
@@ -222,10 +222,10 @@ namespace AccessGrid
             {
                 finalQueryParams["sig_payload"] = payload;
             }
-                
+
             // Generate signature
             string signature = GenerateSignature(payload);
-            
+
             // For GET requests or POST requests with empty bodies that need the sig_payload parameter
             // Note: We've already added sig_payload for /v1/key-cards endpoint above
             if ((method == HttpMethod.Get || (method == HttpMethod.Post && data == null)) && !finalQueryParams.ContainsKey("sig_payload"))
@@ -279,12 +279,12 @@ namespace AccessGrid
             {
                 try
                 {
-                    var errorData = !string.IsNullOrEmpty(responseContent) 
-                        ? JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent, _jsonOptions) 
+                    var errorData = !string.IsNullOrEmpty(responseContent)
+                        ? JsonSerializer.Deserialize<Dictionary<string, object>>(responseContent, _jsonOptions)
                         : null;
-                    
-                    var errorMessage =  responseContent;
-                    
+
+                    var errorMessage = responseContent;
+
                     throw new AccessGridException($"API request failed: {errorMessage}");
                 }
                 catch (JsonException)
