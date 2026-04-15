@@ -20,11 +20,17 @@ namespace AccessGrid
         /// </summary>
         public WebhooksService Webhooks { get; }
 
+        /// <summary>
+        /// Credential profile management services
+        /// </summary>
+        public CredentialProfilesService CredentialProfiles { get; }
+
         internal ConsoleService(IApiService apiService)
         {
             _apiService = apiService;
             HID = new HIDService(apiService);
             Webhooks = new WebhooksService(apiService);
+            CredentialProfiles = new CredentialProfilesService(apiService);
         }
 
         /// <summary>
@@ -138,6 +144,39 @@ namespace AccessGrid
         }
 
         /// <summary>
+        /// Lists all landing pages
+        /// </summary>
+        /// <returns>List of landing pages</returns>
+        public async Task<List<LandingPage>> ListLandingPagesAsync()
+        {
+            var response = await _apiService.GetAsync<List<LandingPage>>("/v1/console/landing-pages");
+            return response ?? new List<LandingPage>();
+        }
+
+        /// <summary>
+        /// Creates a new landing page
+        /// </summary>
+        /// <param name="request">Landing page creation details</param>
+        /// <returns>Newly created landing page</returns>
+        public async Task<LandingPage> CreateLandingPageAsync(CreateLandingPageRequest request)
+        {
+            var response = await _apiService.PostAsync<LandingPage>("/v1/console/landing-pages", request);
+            return response;
+        }
+
+        /// <summary>
+        /// Updates an existing landing page
+        /// </summary>
+        /// <param name="landingPageId">ID of the landing page to update</param>
+        /// <param name="request">Landing page update details</param>
+        /// <returns>Updated landing page</returns>
+        public async Task<LandingPage> UpdateLandingPageAsync(string landingPageId, UpdateLandingPageRequest request)
+        {
+            var response = await _apiService.PutAsync<LandingPage>($"/v1/console/landing-pages/{landingPageId}", request);
+            return response;
+        }
+
+        /// <summary>
         /// Retrieves iOS In-App Provisioning identifiers for a card template and access pass
         /// </summary>
         /// <param name="cardTemplateId">The card template ID</param>
@@ -214,6 +253,37 @@ namespace AccessGrid
         internal HIDService(IApiService apiService)
         {
             Orgs = new HIDOrgsService(apiService);
+        }
+    }
+
+    /// <summary>
+    /// Service for managing credential profiles
+    /// </summary>
+    public class CredentialProfilesService
+    {
+        private readonly IApiService _apiService;
+
+        internal CredentialProfilesService(IApiService apiService)
+        {
+            _apiService = apiService;
+        }
+
+        /// <summary>
+        /// Lists all credential profiles
+        /// </summary>
+        public async Task<List<CredentialProfile>> ListAsync()
+        {
+            var response = await _apiService.GetAsync<List<CredentialProfile>>("/v1/console/credential-profiles");
+            return response ?? new List<CredentialProfile>();
+        }
+
+        /// <summary>
+        /// Creates a new credential profile
+        /// </summary>
+        public async Task<CredentialProfile> CreateAsync(CreateCredentialProfileRequest request)
+        {
+            var response = await _apiService.PostAsync<CredentialProfile>("/v1/console/credential-profiles", request);
+            return response;
         }
     }
 
