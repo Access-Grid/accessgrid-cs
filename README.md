@@ -234,7 +234,7 @@ public async Task CreateTemplateAsync()
    {
        Name = "Employee Access Pass",
        Platform = "apple",
-       UseCase = "employee_badge",
+       UseCase = "corporate_id",
        Protocol = "desfire",
        AllowOnMultipleDevices = true,
        WatchCount = 2,
@@ -520,7 +520,7 @@ public async Task CreateLandingPageAsync()
     var landingPage = await client.Console.CreateLandingPageAsync(new CreateLandingPageRequest
     {
         Name = "Miami Office Access Pass",
-        Kind = "universal",
+        Kind = "universal", // "universal" or "personalized"
         AdditionalText = "Welcome to the Miami Office",
         BgColor = "#f1f5f9",
         AllowImmediateDownload = true
@@ -1052,6 +1052,7 @@ public class AccessCardsApiTests
         _mockApiService.Verify(x => x.PostAsync<AccessCard>("/v1/key-cards/card123/suspend", null), Times.Once);
     }
 }
+```
 
 ## Feature Matrix
 

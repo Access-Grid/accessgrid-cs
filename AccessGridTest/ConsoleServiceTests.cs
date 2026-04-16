@@ -566,6 +566,31 @@ public class ConsoleServiceTests
     }
 
     [Test]
+    public async Task GetLedgerItemsAsync_ParsesAmountFromJsonString()
+    {
+        // Rails serializes BigDecimal as a JSON string, not a number.
+        var json = """
+        {
+            "ledger_items": [
+                {
+                    "created_at": "2025-06-15T14:30:00Z",
+                    "amount": "-1.50",
+                    "id": "li_abc123",
+                    "kind": "access_pass_debit"
+                }
+            ],
+            "pagination": { "current_page": 1, "per_page": 50, "total_pages": 1, "total_count": 1 }
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.GetLedgerItemsAsync();
+
+        Assert.That(result.LedgerItems, Has.Count.EqualTo(1));
+        Assert.That(result.LedgerItems[0].Amount, Is.EqualTo(-1.50m));
+    }
+
+    [Test]
     public async Task GetLedgerItemsAsync_PassesDateFilters()
     {
         var json = """
@@ -865,6 +890,21 @@ public class ConsoleServiceTests
         )), Times.Once);
     }
 
+    [Test]
+    public async Task WebhooksDeleteAsync_IncludesSigPayloadQueryParam()
+    {
+        // DELETE requests have no body, so the server looks for `sig_payload` in
+        // the query string and verifies the signature against that.
+        StubHttpResponse("{}");
+
+        await _client.Console.Webhooks.DeleteAsync("wh_123");
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Delete &&
+            req.RequestUri!.ToString().Contains("sig_payload=")
+        )), Times.Once);
+    }
+
     #endregion
 
     #region HIDOrgsService
@@ -1158,6 +1198,33 @@ public class ConsoleServiceTests
             req.Method == HttpMethod.Get &&
             req.RequestUri!.ToString().Contains("/v1/console/credential-profiles")
         )), Times.Once);
+    }
+
+    [Test]
+    public async Task CredentialProfilesListAsync_HandlesNullNumericFields()
+    {
+        // The API can return null for keys_diversified and file_size; the SDK
+        // previously typed these as non-nullable bool/int and crashed.
+        var json = """
+        [
+            {
+                "id": "cp_1",
+                "name": "Profile",
+                "keys": [
+                    { "ex_id": "key_1", "label": "Master Key", "keys_diversified": null, "source_key_index": null }
+                ],
+                "files": [
+                    { "ex_id": "file_1", "file_type": "Standard", "file_size": null }
+                ]
+            }
+        ]
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.CredentialProfiles.ListAsync();
+
+        Assert.That(result[0].Keys[0].KeysDiversified, Is.Null);
+        Assert.That(result[0].Files[0].FileSize, Is.Null);
     }
 
     [Test]

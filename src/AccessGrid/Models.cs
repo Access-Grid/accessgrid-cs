@@ -408,7 +408,7 @@ namespace AccessGrid
         public Platform Platform { get; set; }
 
         /// <summary>
-        /// Must be `employee_badge`
+        /// Must be one of `corporate_id`, `student_id`, `multi_family`, or `hotel`
         /// </summary>
         [JsonPropertyName("use_case")]
         public string UseCase { get; set; }
@@ -778,6 +778,7 @@ namespace AccessGrid
         public DateTime? CreatedAt { get; set; }
 
         [JsonPropertyName("amount")]
+        [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
         public decimal Amount { get; set; }
 
         [JsonPropertyName("id")]
@@ -1134,6 +1135,9 @@ namespace AccessGrid
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Must be `universal` or `personalized`
+        /// </summary>
         [JsonPropertyName("kind")]
         public string Kind { get; set; }
 
@@ -1195,7 +1199,7 @@ namespace AccessGrid
         public string Label { get; set; }
 
         [JsonPropertyName("keys_diversified")]
-        public bool KeysDiversified { get; set; }
+        public bool? KeysDiversified { get; set; }
 
         [JsonPropertyName("source_key_index")]
         public int? SourceKeyIndex { get; set; }
@@ -1213,7 +1217,7 @@ namespace AccessGrid
         public string FileType { get; set; }
 
         [JsonPropertyName("file_size")]
-        public int FileSize { get; set; }
+        public int? FileSize { get; set; }
 
         [JsonPropertyName("communication_settings")]
         public string CommunicationSettings { get; set; }
