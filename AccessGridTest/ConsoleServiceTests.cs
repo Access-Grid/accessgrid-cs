@@ -300,6 +300,32 @@ public class ConsoleServiceTests
 
     #endregion
 
+    #region PublishTemplateAsync
+
+    [Test]
+    public async Task PublishTemplateAsync_PostsToPublishEndpointAndReturnsStatus()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "status": "in-review"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.PublishTemplateAsync("tmpl-123");
+
+        Assert.That(result.Id, Is.EqualTo("tmpl-123"));
+        Assert.That(result.Status, Is.EqualTo("in-review"));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-123/publish")
+        )), Times.Once);
+    }
+
+    #endregion
+
     #region UpdateTemplateAsync
 
     [Test]
