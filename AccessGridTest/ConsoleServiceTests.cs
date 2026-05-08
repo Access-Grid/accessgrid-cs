@@ -300,6 +300,157 @@ public class ConsoleServiceTests
 
     #endregion
 
+    #region RevealTemplatePrivateKeyAsync
+
+    [Test]
+    public async Task RevealTemplatePrivateKeyAsync_DecryptsServerEnvelope()
+    {
+        // Plaintext that the server pretends is the stored smart_tap_key.
+        const string plaintextPem = """
+        -----BEGIN EC PRIVATE KEY-----
+        MHcCAQEEIBmlx2KqB7+RLMrHWLMm6hh3JwFrL2ZxZTLkW1yX8OabAoGCCqGSM49
+        AwEHoUQDQgAEs5bJrjEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXA
+        MPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEEXAMPLEE=
+        -----END EC PRIVATE KEY-----
+        """;
+
+        // Capture the SDK's outgoing client_public_key, then encrypt against it.
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                var requestBody = await req.Content!.ReadAsStringAsync();
+                var requestJson = System.Text.Json.JsonDocument.Parse(requestBody);
+                var clientPublicKeyPem = requestJson.RootElement.GetProperty("client_public_key").GetString();
+
+                var envelope = SimulateServerEncrypt(plaintextPem, clientPublicKeyPem!);
+                var responseJson = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    key_version = "tmpl-42",
+                    collector_id = "12345678",
+                    fingerprint = new string('a', 64),
+                    encrypted_private_key = new
+                    {
+                        alg = "ECDH-ES+A256GCM",
+                        ephemeral_public_key = envelope.EphemeralPublicKeyPem,
+                        iv = Convert.ToBase64String(envelope.Iv),
+                        ciphertext = Convert.ToBase64String(envelope.Ciphertext),
+                        tag = Convert.ToBase64String(envelope.Tag)
+                    }
+                });
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+                };
+            });
+
+        var result = await _client.Console.RevealTemplatePrivateKeyAsync("tmpl-42");
+
+        Assert.That(result.KeyVersion, Is.EqualTo("tmpl-42"));
+        Assert.That(result.CollectorId, Is.EqualTo("12345678"));
+        Assert.That(result.Fingerprint, Has.Length.EqualTo(64));
+        Assert.That(result.PrivateKey, Is.EqualTo(plaintextPem));
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-42/smart-tap/reveal")
+        )), Times.Once);
+    }
+
+    [Test]
+    public void RevealTemplatePrivateKeyAsync_RejectsEmptyTemplateId()
+    {
+        Assert.ThrowsAsync<ArgumentException>(async () =>
+            await _client.Console.RevealTemplatePrivateKeyAsync(""));
+    }
+
+    private sealed class FakeServerEnvelope
+    {
+        public string EphemeralPublicKeyPem { get; set; } = "";
+        public byte[] Iv { get; set; } = Array.Empty<byte>();
+        public byte[] Ciphertext { get; set; } = Array.Empty<byte>();
+        public byte[] Tag { get; set; } = Array.Empty<byte>();
+    }
+
+    // Mirrors the server's SmartTap::RevealEncryption.encrypt using BouncyCastle so
+    // the round-trip is exercised end to end.
+    private static FakeServerEnvelope SimulateServerEncrypt(string plaintextPem, string clientPublicKeyPem)
+    {
+        var curve = Org.BouncyCastle.Asn1.X9.ECNamedCurveTable.GetByName("P-256");
+        var domain = new Org.BouncyCastle.Crypto.Parameters.ECDomainParameters(
+            curve.Curve, curve.G, curve.N, curve.H, curve.GetSeed());
+
+        // Generate ephemeral keypair (server side).
+        var keyGen = new Org.BouncyCastle.Crypto.Generators.ECKeyPairGenerator();
+        keyGen.Init(new Org.BouncyCastle.Crypto.Parameters.ECKeyGenerationParameters(
+            domain, new Org.BouncyCastle.Security.SecureRandom()));
+        var ephemeral = keyGen.GenerateKeyPair();
+
+        // Read client's public key.
+        Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters clientPub;
+        using (var reader = new System.IO.StringReader(clientPublicKeyPem))
+        {
+            var pem = new Org.BouncyCastle.OpenSsl.PemReader(reader);
+            clientPub = (Org.BouncyCastle.Crypto.Parameters.ECPublicKeyParameters)pem.ReadObject();
+        }
+
+        // ECDH(server_ephemeral_priv, client_pub).
+        var agreement = new Org.BouncyCastle.Crypto.Agreement.ECDHBasicAgreement();
+        agreement.Init(ephemeral.Private);
+        var sharedBigInt = agreement.CalculateAgreement(clientPub);
+        var unsigned = sharedBigInt.ToByteArrayUnsigned();
+        var sharedSecret = new byte[32];
+        Buffer.BlockCopy(unsigned, 0, sharedSecret, 32 - unsigned.Length, unsigned.Length);
+
+        // HKDF-SHA256 → 32-byte AES key.
+        var hkdf = new Org.BouncyCastle.Crypto.Generators.HkdfBytesGenerator(
+            new Org.BouncyCastle.Crypto.Digests.Sha256Digest());
+        hkdf.Init(new Org.BouncyCastle.Crypto.Parameters.HkdfParameters(
+            sharedSecret, salt: new byte[0],
+            info: Encoding.UTF8.GetBytes("accessgrid-smart-tap-reveal-v1")));
+        var aesKey = new byte[32];
+        hkdf.GenerateBytes(aesKey, 0, aesKey.Length);
+
+        // AES-256-GCM encrypt.
+        var iv = new byte[12];
+        new Org.BouncyCastle.Security.SecureRandom().NextBytes(iv);
+        var gcm = new Org.BouncyCastle.Crypto.Modes.GcmBlockCipher(
+            new Org.BouncyCastle.Crypto.Engines.AesEngine());
+        gcm.Init(true, new Org.BouncyCastle.Crypto.Parameters.AeadParameters(
+            new Org.BouncyCastle.Crypto.Parameters.KeyParameter(aesKey),
+            macSize: 128, nonce: iv, associatedText: new byte[0]));
+        var plaintextBytes = Encoding.UTF8.GetBytes(plaintextPem);
+        var combined = new byte[gcm.GetOutputSize(plaintextBytes.Length)];
+        int written = gcm.ProcessBytes(plaintextBytes, 0, plaintextBytes.Length, combined, 0);
+        written += gcm.DoFinal(combined, written);
+        // BC concatenates ciphertext||tag in `combined`. Tag is final 16 bytes.
+        var ciphertext = new byte[combined.Length - 16];
+        var tag = new byte[16];
+        Buffer.BlockCopy(combined, 0, ciphertext, 0, ciphertext.Length);
+        Buffer.BlockCopy(combined, ciphertext.Length, tag, 0, 16);
+
+        // Serialize ephemeral public key as PEM (SPKI).
+        string ephemeralPubPem;
+        using (var writer = new System.IO.StringWriter())
+        {
+            var pemWriter = new Org.BouncyCastle.OpenSsl.PemWriter(writer);
+            pemWriter.WriteObject(ephemeral.Public);
+            pemWriter.Writer.Flush();
+            ephemeralPubPem = writer.ToString();
+        }
+
+        return new FakeServerEnvelope
+        {
+            EphemeralPublicKeyPem = ephemeralPubPem,
+            Iv = iv,
+            Ciphertext = ciphertext,
+            Tag = tag
+        };
+    }
+
+    #endregion
+
     #region UpdateTemplateAsync
 
     [Test]

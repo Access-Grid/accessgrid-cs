@@ -319,6 +319,31 @@ public async Task ReadTemplateAsync()
 }
 ```
 
+### Revealing a SmartTap Private Key
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task RevealTemplatePrivateKeyAsync()
+{
+   var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+   var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+   using var client = new AccessGridClient(accountId, secretKey);
+
+   // SDK generates a P-256 keypair locally, submits the public key, and
+   // decrypts the server's response. The private key never leaves the host.
+   var result = await client.Console.RevealTemplatePrivateKeyAsync("0xd3adb00b5");
+
+   Console.WriteLine($"Key version: {result.KeyVersion}");
+   Console.WriteLine($"Collector ID: {result.CollectorId}");
+   Console.WriteLine($"Fingerprint: {result.Fingerprint}");
+   Console.WriteLine(result.PrivateKey); // PEM — store in your reader/collector key vault
+}
+```
+
 ### Reading Event Logs
 
 ```csharp
@@ -1069,6 +1094,7 @@ public class AccessCardsApiTests
 | POST /v1/console/card-templates | `Console.CreateTemplateAsync()` | Y |
 | PUT /v1/console/card-templates/{id} | `Console.UpdateTemplateAsync()` | Y |
 | GET /v1/console/card-templates/{id} | `Console.ReadTemplateAsync()` | Y |
+| POST /v1/console/card-templates/{id}/smart-tap/reveal | `Console.RevealTemplatePrivateKeyAsync()` | Y |
 | GET /v1/console/card-templates/{id}/logs | `Console.EventLogAsync()` | Y |
 | GET /v1/console/card-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
 | POST /v1/console/card-template-pairs | `Console.CreatePassTemplatePairAsync()` | Y |
