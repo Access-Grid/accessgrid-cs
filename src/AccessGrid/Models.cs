@@ -807,6 +807,18 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// Response from publishing a card template
+    /// </summary>
+    public class PublishTemplateResponse
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+    }
+
+    /// <summary>
     /// Encrypted envelope returned by the SmartTap reveal endpoint.
     /// Used internally to decrypt; not surfaced to SDK callers.
     /// </summary>

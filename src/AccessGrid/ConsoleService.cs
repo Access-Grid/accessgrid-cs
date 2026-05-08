@@ -69,6 +69,17 @@ namespace AccessGrid
         }
 
         /// <summary>
+        /// Publishes a card template (enterprise only)
+        /// </summary>
+        /// <param name="templateId">Unique identifier for the card template to publish</param>
+        /// <returns>Template id and resulting status</returns>
+        public async Task<PublishTemplateResponse> PublishTemplateAsync(string templateId)
+        {
+            var response = await _apiService.PostAsync<PublishTemplateResponse>($"/v1/console/card-templates/{templateId}/publish", null);
+            return response;
+        }
+
+        /// <summary>
         /// Reveals the SmartTap private key for a card template.
         ///
         /// The SDK generates a P-256 keypair locally, submits the public key to the
