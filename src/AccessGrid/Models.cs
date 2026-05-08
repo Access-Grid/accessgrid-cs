@@ -807,6 +807,18 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// Response from publishing a card template
+    /// </summary>
+    public class PublishTemplateResponse
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+    }
+
+    /// <summary>
     /// iOS In-App Provisioning preflight response
     /// </summary>
     public class IosPreflightResponse

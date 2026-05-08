@@ -319,6 +319,27 @@ public async Task ReadTemplateAsync()
 }
 ```
 
+### Publishing a Card Template
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task PublishTemplateAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    var result = await client.Console.PublishTemplateAsync("0xd3adb00b5");
+
+    Console.WriteLine($"Template ID: {result.Id}");
+    Console.WriteLine($"Status: {result.Status}");
+}
+```
+
 ### Reading Event Logs
 
 ```csharp
@@ -1069,6 +1090,7 @@ public class AccessCardsApiTests
 | POST /v1/console/card-templates | `Console.CreateTemplateAsync()` | Y |
 | PUT /v1/console/card-templates/{id} | `Console.UpdateTemplateAsync()` | Y |
 | GET /v1/console/card-templates/{id} | `Console.ReadTemplateAsync()` | Y |
+| POST /v1/console/card-templates/{id}/publish | `Console.PublishTemplateAsync()` | Y |
 | GET /v1/console/card-templates/{id}/logs | `Console.EventLogAsync()` | Y |
 | GET /v1/console/card-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
 | POST /v1/console/card-template-pairs | `Console.CreatePassTemplatePairAsync()` | Y |
