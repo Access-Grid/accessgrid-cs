@@ -819,6 +819,62 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// Encrypted envelope returned by the SmartTap reveal endpoint.
+    /// Used internally to decrypt; not surfaced to SDK callers.
+    /// </summary>
+    internal class SmartTapRevealEnvelope
+    {
+        [JsonPropertyName("alg")]
+        public string Alg { get; set; }
+
+        [JsonPropertyName("ephemeral_public_key")]
+        public string EphemeralPublicKey { get; set; }
+
+        [JsonPropertyName("iv")]
+        public string Iv { get; set; }
+
+        [JsonPropertyName("ciphertext")]
+        public string Ciphertext { get; set; }
+
+        [JsonPropertyName("tag")]
+        public string Tag { get; set; }
+    }
+
+    /// <summary>
+    /// Raw response from POST /v1/console/card-templates/{id}/smart-tap/reveal.
+    /// Internal: callers receive RevealTemplatePrivateKeyResponse instead.
+    /// </summary>
+    internal class SmartTapRevealRawResponse
+    {
+        [JsonPropertyName("key_version")]
+        public string KeyVersion { get; set; }
+
+        [JsonPropertyName("collector_id")]
+        public string CollectorId { get; set; }
+
+        [JsonPropertyName("fingerprint")]
+        public string Fingerprint { get; set; }
+
+        [JsonPropertyName("encrypted_private_key")]
+        public SmartTapRevealEnvelope EncryptedPrivateKey { get; set; }
+    }
+
+    /// <summary>
+    /// Result of a SmartTap private key reveal. The private key has already been
+    /// decrypted client-side; the server-side encryption envelope is not exposed.
+    /// </summary>
+    public class RevealTemplatePrivateKeyResponse
+    {
+        public string KeyVersion { get; set; }
+        public string CollectorId { get; set; }
+        public string Fingerprint { get; set; }
+        /// <summary>
+        /// PEM-encoded private key. Sensitive — store in your reader/collector key vault.
+        /// </summary>
+        public string PrivateKey { get; set; }
+    }
+
+    /// <summary>
     /// iOS In-App Provisioning preflight response
     /// </summary>
     public class IosPreflightResponse

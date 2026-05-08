@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace AccessGrid
@@ -75,6 +77,48 @@ namespace AccessGrid
         {
             var response = await _apiService.PostAsync<PublishTemplateResponse>($"/v1/console/card-templates/{templateId}/publish", null);
             return response;
+        }
+
+        /// <summary>
+        /// Reveals the SmartTap private key for a card template.
+        ///
+        /// The SDK generates a P-256 keypair locally, submits the public key to the
+        /// server, and decrypts the returned envelope (ECDH-ES + HKDF-SHA256 +
+        /// AES-256-GCM) so that the private key never leaves this host in plaintext.
+        ///
+        /// Each call must use a fresh public key — the server rejects reuse.
+        /// </summary>
+        /// <param name="templateId">Card template id (must be a published Google SmartTap template)</param>
+        /// <returns>Decrypted private key plus key version, collector id, and fingerprint</returns>
+        public async Task<RevealTemplatePrivateKeyResponse> RevealTemplatePrivateKeyAsync(string templateId)
+        {
+            if (string.IsNullOrEmpty(templateId))
+                throw new ArgumentException("templateId is required", nameof(templateId));
+
+            var generated = SmartTapRevealCrypto.GenerateP256KeyPair();
+            var body = new { client_public_key = generated.PublicKeyPem };
+
+            var raw = await _apiService.PostAsync<SmartTapRevealRawResponse>(
+                $"/v1/console/card-templates/{templateId}/smart-tap/reveal", body);
+
+            if (raw?.EncryptedPrivateKey == null)
+                throw new InvalidOperationException("Server response missing encrypted_private_key envelope");
+
+            var envelope = raw.EncryptedPrivateKey;
+            var iv = Convert.FromBase64String(envelope.Iv);
+            var ciphertext = Convert.FromBase64String(envelope.Ciphertext);
+            var tag = Convert.FromBase64String(envelope.Tag);
+
+            var plaintext = SmartTapRevealCrypto.DecryptEnvelope(
+                generated.KeyPair, envelope.EphemeralPublicKey, iv, ciphertext, tag);
+
+            return new RevealTemplatePrivateKeyResponse
+            {
+                KeyVersion = raw.KeyVersion,
+                CollectorId = raw.CollectorId,
+                Fingerprint = raw.Fingerprint,
+                PrivateKey = Encoding.UTF8.GetString(plaintext)
+            };
         }
 
         /// <summary>
