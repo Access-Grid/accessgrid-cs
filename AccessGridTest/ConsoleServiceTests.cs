@@ -391,6 +391,96 @@ public class ConsoleServiceTests
             await _client.Console.RevealTemplatePrivateKeyAsync(""));
     }
 
+    [Test]
+    public void RevealTemplatePrivateKeyAsync_ThrowsInvalidEnvelopeOnMissingEnvelope()
+    {
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    "{\"key_version\":\"tmpl-42\",\"collector_id\":\"12345678\",\"fingerprint\":\"" + new string('a', 64) + "\"}",
+                    Encoding.UTF8, "application/json")
+            });
+
+        var ex = Assert.ThrowsAsync<InvalidEnvelopeException>(async () =>
+            await _client.Console.RevealTemplatePrivateKeyAsync("tmpl-42"));
+        Assert.That(ex.Message, Does.Contain("encrypted_private_key"));
+    }
+
+    [Test]
+    public void RevealTemplatePrivateKeyAsync_ThrowsInvalidEnvelopeOnMalformedEphemeralPubKey()
+    {
+        var responseJson = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            key_version = "tmpl-42",
+            collector_id = "12345678",
+            fingerprint = new string('a', 64),
+            encrypted_private_key = new
+            {
+                alg = "ECDH-ES+A256GCM",
+                ephemeral_public_key = "NOT A PEM",
+                iv = "AAAAAAAAAAAAAAAA",
+                ciphertext = "AAAA",
+                tag = "AAAAAAAAAAAAAAAAAAAAAA=="
+            }
+        });
+
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+            });
+
+        Assert.ThrowsAsync<InvalidEnvelopeException>(async () =>
+            await _client.Console.RevealTemplatePrivateKeyAsync("tmpl-42"));
+    }
+
+    [Test]
+    public async Task RevealTemplatePrivateKeyAsync_ThrowsDecryptExceptionOnTamperedTag()
+    {
+        const string plaintextPem = "SENTINEL-NOT-A-CREDENTIAL";
+
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                var requestBody = await req.Content!.ReadAsStringAsync();
+                var requestJson = System.Text.Json.JsonDocument.Parse(requestBody);
+                var clientPublicKeyPem = requestJson.RootElement.GetProperty("client_public_key").GetString();
+
+                var envelope = SimulateServerEncrypt(plaintextPem, clientPublicKeyPem!);
+                // Flip a bit in the auth tag.
+                envelope.Tag[0] ^= 0x01;
+
+                var responseJson = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    key_version = "tmpl-42",
+                    collector_id = "12345678",
+                    fingerprint = new string('a', 64),
+                    encrypted_private_key = new
+                    {
+                        alg = "ECDH-ES+A256GCM",
+                        ephemeral_public_key = envelope.EphemeralPublicKeyPem,
+                        iv = Convert.ToBase64String(envelope.Iv),
+                        ciphertext = Convert.ToBase64String(envelope.Ciphertext),
+                        tag = Convert.ToBase64String(envelope.Tag)
+                    }
+                });
+
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(responseJson, Encoding.UTF8, "application/json")
+                };
+            });
+
+        Assert.ThrowsAsync<DecryptException>(async () =>
+            await _client.Console.RevealTemplatePrivateKeyAsync("tmpl-42"));
+
+        await Task.CompletedTask;
+    }
+
     private sealed class FakeServerEnvelope
     {
         public string EphemeralPublicKeyPem { get; set; } = "";
