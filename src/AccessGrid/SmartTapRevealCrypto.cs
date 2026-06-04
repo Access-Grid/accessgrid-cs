@@ -75,7 +75,7 @@ namespace AccessGrid
             {
                 ECPublicKeyParameters ecPub => ecPub,
                 AsymmetricCipherKeyPair pair when pair.Public is ECPublicKeyParameters pairPub => pairPub,
-                _ => throw new InvalidOperationException("ephemeral_public_key is not a valid EC public key PEM")
+                _ => throw new InvalidEnvelopeException("ephemeral_public_key is not a valid EC public key PEM")
             };
         }
 
@@ -93,7 +93,7 @@ namespace AccessGrid
             var unsigned = value.ToByteArrayUnsigned();
             if (unsigned.Length == length) return unsigned;
             if (unsigned.Length > length)
-                throw new InvalidOperationException("ECDH shared secret exceeds expected length");
+                throw new InvalidEnvelopeException("ECDH shared secret exceeds expected length");
             var padded = new byte[length];
             Buffer.BlockCopy(unsigned, 0, padded, length - unsigned.Length, unsigned.Length);
             return padded;
@@ -120,7 +120,14 @@ namespace AccessGrid
             cipher.Init(false, new AeadParameters(new KeyParameter(key), tag.Length * 8, iv, associatedText: new byte[0]));
             var output = new byte[cipher.GetOutputSize(combined.Length)];
             int len = cipher.ProcessBytes(combined, 0, combined.Length, output, 0);
-            len += cipher.DoFinal(output, len);
+            try
+            {
+                len += cipher.DoFinal(output, len);
+            }
+            catch (Org.BouncyCastle.Crypto.InvalidCipherTextException ex)
+            {
+                throw new DecryptException("AES-GCM decryption failed (auth tag verification)", ex);
+            }
 
             if (len == output.Length) return output;
             var trimmed = new byte[len];

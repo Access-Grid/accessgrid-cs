@@ -102,7 +102,7 @@ namespace AccessGrid
                 $"/v1/console/card-templates/{templateId}/smart-tap/reveal", body);
 
             if (raw?.EncryptedPrivateKey == null)
-                throw new InvalidOperationException("Server response missing encrypted_private_key envelope");
+                throw new InvalidEnvelopeException("Server response missing encrypted_private_key envelope");
 
             var envelope = raw.EncryptedPrivateKey;
             var iv = Convert.FromBase64String(envelope.Iv);
