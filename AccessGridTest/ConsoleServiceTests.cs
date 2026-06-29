@@ -285,6 +285,7 @@ public class ConsoleServiceTests
             Protocol = Protocol.DESFire,
             BackgroundColor = "#FFFFFF",
             SupportUrl = "https://help.yourcompany.com",
+            AndroidDeviceLimit = "all_devices",
             Metadata = new Dictionary<string, object> { ["version"] = "2.1" }
         };
 
@@ -294,6 +295,8 @@ public class ConsoleServiceTests
         // Flat params should appear at root level, not nested under design/support_info
         Assert.That(capturedBody, Does.Contain("background_color"));
         Assert.That(capturedBody, Does.Contain("support_url"));
+        Assert.That(capturedBody, Does.Contain("android_device_limit"));
+        Assert.That(capturedBody, Does.Contain("all_devices"));
         Assert.That(capturedBody, Does.Not.Contain("\"design\""));
         Assert.That(capturedBody, Does.Not.Contain("\"support_info\""));
     }
