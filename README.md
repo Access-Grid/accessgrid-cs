@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.5.1
+Install-Package accessgrid -Version 1.6.0
 ```
 
 ## Authentication
@@ -239,6 +239,7 @@ public async Task CreateTemplateAsync()
        AllowOnMultipleDevices = true,
        WatchCount = 2,
        IPhoneCount = 3,
+       AndroidDeviceLimit = "single_device",
        BackgroundColor = "#FFFFFF",
        LabelColor = "#000000",
        LabelSecondaryColor = "#333333",
@@ -280,6 +281,7 @@ public async Task UpdateTemplateAsync()
          AllowOnMultipleDevices = true,
          WatchCount = 2,
          IPhoneCount = 3,
+         AndroidDeviceLimit = "single_device",
          BackgroundColor = "#FFFFFF",
          LabelColor = "#000000",
          LabelSecondaryColor = "#333333",

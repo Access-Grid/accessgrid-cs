@@ -438,6 +438,14 @@ namespace AccessGrid
         public int? IPhoneCount { get; set; }
 
         /// <summary>
+        /// Controls how many devices and holders an Android (Google Wallet) credential
+        /// from this template may live on. One of `single_device`, `all_devices`, or
+        /// `multi_user`. Defaults to `single_device`.
+        /// </summary>
+        [JsonPropertyName("android_device_limit")]
+        public string AndroidDeviceLimit { get; set; }
+
+        /// <summary>
         /// Must be a 6 character hexadecimal value for the background color, i.e. #FFFFFF
         /// </summary>
         [JsonPropertyName("background_color")]
@@ -523,6 +531,14 @@ namespace AccessGrid
         /// </summary>
         [JsonPropertyName("iphone_count")]
         public int? IPhoneCount { get; set; }
+
+        /// <summary>
+        /// Controls how many devices and holders an Android (Google Wallet) credential
+        /// from this template may live on. One of `single_device`, `all_devices`, or
+        /// `multi_user`. Defaults to `single_device`.
+        /// </summary>
+        [JsonPropertyName("android_device_limit")]
+        public string AndroidDeviceLimit { get; set; }
 
         /// <summary>
         /// Must be a 6 character hexadecimal value for the background color, i.e. #FFFFFF
