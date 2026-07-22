@@ -234,10 +234,47 @@ namespace AccessGrid
         [JsonPropertyName("metadata")]
         public Dictionary<string, object> Metadata { get; set; }
 
+        // Multi-family (Resident Key) fields — for multi_family use-case templates.
+        [JsonPropertyName("property_name")]
+        public string PropertyName { get; set; }
+
+        [JsonPropertyName("property_address")]
+        public string PropertyAddress { get; set; }
+
+        [JsonPropertyName("building_name")]
+        public string BuildingName { get; set; }
+
+        [JsonPropertyName("storage_unit")]
+        public string StorageUnit { get; set; }
+
+        [JsonPropertyName("parking_address")]
+        public string ParkingAddress { get; set; }
+
+        [JsonPropertyName("barcode_data")]
+        public string BarcodeData { get; set; }
+
+        [JsonPropertyName("unit_numbers")]
+        public List<string> UnitNumbers { get; set; }
+
+        [JsonPropertyName("parking_details")]
+        public List<ParkingDetail> ParkingDetails { get; set; }
+
         public override string ToString()
         {
             return $"AccessCard(name='{FullName}', id='{Id}', state='{State}')";
         }
+    }
+
+    /// <summary>
+    /// A single label/value parking entry on a multi-family pass.
+    /// </summary>
+    public class ParkingDetail
+    {
+        [JsonPropertyName("label")]
+        public string Label { get; set; }
+
+        [JsonPropertyName("value")]
+        public string Value { get; set; }
     }
 
     public class Template
@@ -933,6 +970,18 @@ namespace AccessGrid
 
         [JsonPropertyName("private_key")]
         public string PrivateKey { get; set; }
+    }
+
+    /// <summary>
+    /// Result of triggering a webhook verification.
+    /// </summary>
+    public class WebhookVerification
+    {
+        [JsonPropertyName("id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("verified")]
+        public bool Verified { get; set; }
     }
 
     /// <summary>

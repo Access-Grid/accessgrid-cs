@@ -329,6 +329,23 @@ public class ConsoleServiceTests
 
     #endregion
 
+    #region DeleteTemplateAsync
+
+    [Test]
+    public async Task DeleteTemplateAsync_DeletesTheTemplate()
+    {
+        StubHttpResponse("""{"id": "tmpl-123", "deactivated": true}""");
+
+        await _client.Console.DeleteTemplateAsync("tmpl-123");
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Delete &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-123")
+        )), Times.Once);
+    }
+
+    #endregion
+
     #region RevealTemplatePrivateKeyAsync
 
     [Test]
@@ -1175,6 +1192,32 @@ public class ConsoleServiceTests
         )), Times.Once);
     }
 
+    [Test]
+    public async Task WebhooksVerifyAsync_ReturnsVerifiedTrueWhenAlreadyVerified()
+    {
+        StubHttpResponse("""{"id": "wh_123", "verified": true}""");
+
+        var result = await _client.Console.Webhooks.VerifyAsync("wh_123");
+
+        Assert.That(result.Id, Is.EqualTo("wh_123"));
+        Assert.That(result.Verified, Is.True);
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Post &&
+            req.RequestUri!.ToString().Contains("/v1/console/webhooks/wh_123/verify")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task WebhooksVerifyAsync_ReturnsVerifiedFalseOn202()
+    {
+        StubHttpResponse("""{"id": "wh_123", "verified": false}""", HttpStatusCode.Accepted);
+
+        var result = await _client.Console.Webhooks.VerifyAsync("wh_123");
+
+        Assert.That(result.Verified, Is.False);
+    }
+
     #endregion
 
     #region HIDOrgsService
@@ -1546,6 +1589,19 @@ public class ConsoleServiceTests
         _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
             req.Method == HttpMethod.Post &&
             req.RequestUri!.ToString().Contains("/v1/console/credential-profiles")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task CredentialProfilesDeleteAsync_ShouldDeleteProfile()
+    {
+        StubHttpResponse("""{"id": "cp_123", "deactivated": true}""");
+
+        await _client.Console.CredentialProfiles.DeleteAsync("cp_123");
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Delete &&
+            req.RequestUri!.ToString().Contains("/v1/console/credential-profiles/cp_123")
         )), Times.Once);
     }
 

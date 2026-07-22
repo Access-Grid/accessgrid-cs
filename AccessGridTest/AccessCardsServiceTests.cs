@@ -309,4 +309,54 @@ public class AccessCardsServiceTests
     }
 
     #endregion
+
+    #region Multi-family
+
+    [Test]
+    public async Task ProvisionAsync_SerializesMultiFamilyResidentFields()
+    {
+        HttpRequestMessage capturedRequest = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Callback<HttpRequestMessage>(req => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """{"id":"0xres1d","full_name":"Jane Resident","state":"active"}""",
+                    Encoding.UTF8, "application/json")
+            });
+
+        var request = new ProvisionCardRequest
+        {
+            CardTemplateId = "0xmultifam",
+            FullName = "Jane Resident",
+            Email = "jane@example.com",
+            PropertyName = "Riverside Apartments",
+            PropertyAddress = "500 River Rd, Austin, TX 78701",
+            BuildingName = "Building C",
+            Location = "Austin",
+            StorageUnit = "S-14",
+            ParkingAddress = "Level 2, Spot 88",
+            BarcodeData = "https://resident.example.com/jane",
+            UnitNumbers = new List<string> { "C-204", "C-205" },
+            ParkingDetails = new List<ParkingDetail>
+            {
+                new ParkingDetail { Label = "Reserved", Value = "P-88" }
+            }
+        };
+
+        await _httpClient.AccessCards.ProvisionAsync(request);
+
+        var body = await capturedRequest!.Content!.ReadAsStringAsync();
+        Assert.That(body, Does.Contain("\"property_name\":\"Riverside Apartments\""));
+        Assert.That(body, Does.Contain("\"property_address\":\"500 River Rd, Austin, TX 78701\""));
+        Assert.That(body, Does.Contain("\"building_name\":\"Building C\""));
+        Assert.That(body, Does.Contain("\"storage_unit\":\"S-14\""));
+        Assert.That(body, Does.Contain("\"parking_address\":\"Level 2, Spot 88\""));
+        Assert.That(body, Does.Contain("\"barcode_data\":\"https://resident.example.com/jane\""));
+        Assert.That(body, Does.Contain("\"unit_numbers\":[\"C-204\",\"C-205\"]"));
+        Assert.That(body, Does.Contain("\"parking_details\":[{\"label\":\"Reserved\",\"value\":\"P-88\"}]"));
+    }
+
+    #endregion
 }
