@@ -340,7 +340,8 @@ public class ConsoleServiceTests
 
         _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
             req.Method == HttpMethod.Delete &&
-            req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-123")
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates/tmpl-123") &&
+            Uri.UnescapeDataString(req.RequestUri!.ToString()).Contains("sig_payload={\"id\": \"tmpl-123\"}")
         )), Times.Once);
     }
 
@@ -1204,7 +1205,8 @@ public class ConsoleServiceTests
 
         _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
             req.Method == HttpMethod.Post &&
-            req.RequestUri!.ToString().Contains("/v1/console/webhooks/wh_123/verify")
+            req.RequestUri!.ToString().Contains("/v1/console/webhooks/wh_123/verify") &&
+            Uri.UnescapeDataString(req.RequestUri!.ToString()).Contains("sig_payload={\"id\": \"wh_123\"}")
         )), Times.Once);
     }
 
@@ -1601,7 +1603,8 @@ public class ConsoleServiceTests
 
         _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
             req.Method == HttpMethod.Delete &&
-            req.RequestUri!.ToString().Contains("/v1/console/credential-profiles/cp_123")
+            req.RequestUri!.ToString().Contains("/v1/console/credential-profiles/cp_123") &&
+            Uri.UnescapeDataString(req.RequestUri!.ToString()).Contains("sig_payload={\"id\": \"cp_123\"}")
         )), Times.Once);
     }
 

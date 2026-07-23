@@ -171,7 +171,7 @@ namespace AccessGrid
                 {
                     // For actions like unlink/suspend/resume, get the card ID (second to last part)
                     string lastPart = parts[parts.Length - 1];
-                    if (lastPart == "suspend" || lastPart == "resume" || lastPart == "unlink" || lastPart == "delete")
+                    if (lastPart == "suspend" || lastPart == "resume" || lastPart == "unlink" || lastPart == "delete" || lastPart == "publish" || lastPart == "verify")
                     {
                         resourceId = parts[parts.Length - 2];
                     }
