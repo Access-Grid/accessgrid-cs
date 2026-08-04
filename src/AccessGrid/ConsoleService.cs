@@ -80,6 +80,15 @@ namespace AccessGrid
         }
 
         /// <summary>
+        /// Deletes a card template.
+        /// </summary>
+        /// <param name="templateId">Unique identifier for the card template to delete</param>
+        public async Task DeleteTemplateAsync(string templateId)
+        {
+            await _apiService.DeleteAsync($"/v1/console/card-templates/{templateId}");
+        }
+
+        /// <summary>
         /// Reveals the SmartTap private key for a card template.
         ///
         /// The SDK generates a P-256 keypair locally, submits the public key to the
@@ -305,6 +314,15 @@ namespace AccessGrid
         {
             await _apiService.DeleteAsync($"/v1/console/webhooks/{webhookId}");
         }
+
+        /// <summary>
+        /// Triggers verification for a webhook by ID.
+        /// </summary>
+        public async Task<WebhookVerification> VerifyAsync(string webhookId)
+        {
+            var response = await _apiService.PostAsync<WebhookVerification>($"/v1/console/webhooks/{webhookId}/verify", null);
+            return response;
+        }
     }
 
     /// <summary>
@@ -351,6 +369,14 @@ namespace AccessGrid
         {
             var response = await _apiService.PostAsync<CredentialProfile>("/v1/console/credential-profiles", request);
             return response;
+        }
+
+        /// <summary>
+        /// Deletes a credential profile by ID.
+        /// </summary>
+        public async Task DeleteAsync(string credentialProfileId)
+        {
+            await _apiService.DeleteAsync($"/v1/console/credential-profiles/{credentialProfileId}");
         }
     }
 

@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.6.0
+Install-Package accessgrid -Version 1.7.0
 ```
 
 ## Authentication
@@ -97,6 +97,30 @@ public async Task ProvisionCardAsync()
 
     Console.WriteLine($"Install URL: {card.Url}");
 }
+```
+
+### Provisioning a Multi-Family (Resident) Pass
+
+For `multi_family` templates, `ProvisionCardRequest` carries resident-specific fields:
+
+```csharp
+var card = await client.AccessCards.ProvisionAsync(new ProvisionCardRequest
+{
+    CardTemplateId = "0xmultifam",
+    FullName = "Jane Resident",
+    Email = "jane@example.com",
+    StartDate = DateTime.UtcNow,
+    ExpirationDate = DateTime.UtcNow.AddYears(1),
+    PropertyName = "Riverside Apartments",
+    PropertyAddress = "500 River Rd, Austin, TX 78701",
+    BuildingName = "Building C",
+    Location = "Austin",
+    StorageUnit = "S-14",
+    ParkingAddress = "Level 2, Spot 88",
+    BarcodeData = "https://resident.example.com/jane",
+    UnitNumbers = new List<string> { "C-204" },
+    ParkingDetails = new List<ParkingDetail> { new ParkingDetail { Label = "Reserved", Value = "P-88" } }
+});
 ```
 
 ### Getting an NFC Key
@@ -340,6 +364,12 @@ public async Task PublishTemplateAsync()
     Console.WriteLine($"Template ID: {result.Id}");
     Console.WriteLine($"Status: {result.Status}");
 }
+```
+
+### Deleting a Card Template
+
+```csharp
+await client.Console.DeleteTemplateAsync("0xd3adb00b5");
 ```
 
 ### Revealing a SmartTap Private Key
@@ -660,6 +690,12 @@ public async Task CreateProfileAsync()
 }
 ```
 
+#### Delete a Credential Profile
+
+```csharp
+await client.Console.CredentialProfiles.DeleteAsync("a1b2c3d4e5f");
+```
+
 ### Webhooks
 
 ```csharp
@@ -691,6 +727,10 @@ public async Task ManageWebhooksAsync()
     });
     Console.WriteLine($"Created webhook: {newWebhook.Id}");
     Console.WriteLine($"Private key: {newWebhook.PrivateKey}");
+
+    // Verify a webhook
+    var verification = await client.Console.Webhooks.VerifyAsync(newWebhook.Id);
+    Console.WriteLine($"Verified: {verification.Verified}");
 
     // Delete a webhook
     await client.Console.Webhooks.DeleteAsync(newWebhook.Id);
@@ -1119,6 +1159,7 @@ public class AccessCardsApiTests
 | GET /v1/console/card-templates/{id} | `Console.ReadTemplateAsync()` | Y |
 | POST /v1/console/card-templates/{id}/publish | `Console.PublishTemplateAsync()` | Y |
 | POST /v1/console/card-templates/{id}/smart-tap/reveal | `Console.RevealTemplatePrivateKeyAsync()` | Y |
+| DELETE /v1/console/card-templates/{id} | `Console.DeleteTemplateAsync()` | Y |
 | GET /v1/console/card-templates/{id}/logs | `Console.EventLogAsync()` | Y |
 | GET /v1/console/card-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
 | POST /v1/console/card-template-pairs | `Console.CreatePassTemplatePairAsync()` | Y |
@@ -1129,9 +1170,11 @@ public class AccessCardsApiTests
 | PUT /v1/console/landing-pages/{id} | `Console.UpdateLandingPageAsync()` | Y |
 | GET /v1/console/credential-profiles | `Console.CredentialProfiles.ListAsync()` | Y |
 | POST /v1/console/credential-profiles | `Console.CredentialProfiles.CreateAsync()` | Y |
+| DELETE /v1/console/credential-profiles/{id} | `Console.CredentialProfiles.DeleteAsync()` | Y |
 | GET /v1/console/webhooks | `Console.Webhooks.ListAsync()` | Y |
 | POST /v1/console/webhooks | `Console.Webhooks.CreateAsync()` | Y |
 | DELETE /v1/console/webhooks/{id} | `Console.Webhooks.DeleteAsync()` | Y |
+| POST /v1/console/webhooks/{id}/verify | `Console.Webhooks.VerifyAsync()` | Y |
 | POST /v1/console/hid/orgs | `Console.HID.Orgs.CreateAsync()` | Y |
 | POST /v1/console/hid/orgs/activate | `Console.HID.Orgs.ActivateAsync()` | Y |
 | GET /v1/console/hid/orgs | `Console.HID.Orgs.ListAsync()` | Y |
