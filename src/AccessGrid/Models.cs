@@ -1285,6 +1285,39 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// The CloudEvents data of a card template pair webhook event
+    /// </summary>
+    public class CardTemplatePairEvent
+    {
+        [JsonPropertyName("card_template_pair_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("ios_template")]
+        public CardTemplatePairEventTemplate IosTemplate { get; set; }
+
+        [JsonPropertyName("android_template")]
+        public CardTemplatePairEventTemplate AndroidTemplate { get; set; }
+
+        public class CardTemplatePairEventTemplate
+        {
+            [JsonPropertyName("id")]
+            public string Id { get; set; }
+
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
+
+            [JsonPropertyName("platform")]
+            public Platform Platform { get; set; }
+
+            [JsonPropertyName("protocol")]
+            public Protocol Protocol { get; set; }
+        }
+    }
+
+    /// <summary>
     /// The CloudEvents data of a card template webhook event
     /// </summary>
     public class CardTemplateEvent
