@@ -317,6 +317,9 @@ namespace AccessGrid
 
         [JsonPropertyName("style_settings")]
         public object StyleSettings { get; set; }
+
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
     }
 
     public class ListKeysRequest
