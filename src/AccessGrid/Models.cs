@@ -624,6 +624,12 @@ namespace AccessGrid
         /// </summary>
         [JsonPropertyName("terms_and_conditions_url")]
         public string TermsAndConditionsUrl { get; set; }
+
+        /// <summary>
+        /// Optional metadata key-value pairs
+        /// </summary>
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
     }
 
     public class EventLogFilters
