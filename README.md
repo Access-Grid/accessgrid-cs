@@ -737,6 +737,83 @@ public async Task ManageWebhooksAsync()
 }
 ```
 
+#### Handling incoming webhook events
+
+Deliveries arrive as [CloudEvents](https://cloudevents.io/) JSON with `Content-Type: application/cloudevents+json`. The SDK provides types for the `data` block of each event; you parse the envelope and dispatch on its `type` field.
+
+Envelope field names are lowercase (`specversion`, `dataschema`), so deserialize with `PropertyNameCaseInsensitive = true` or your envelope properties will silently come back null.
+
+```csharp
+using AccessGrid;
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+public record CloudEvent(string SpecVersion, string Id, string Source, string Type, string Time, JsonElement Data);
+
+public class WebhookHandler
+{
+    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
+    public void HandleDelivery(string body)
+    {
+        var envelope = JsonSerializer.Deserialize<CloudEvent>(body, Options);
+        if (envelope is null) return;
+
+        var data = envelope.Data.GetRawText();
+
+        switch (envelope.Type)
+        {
+            case "ag.access_pass.issued":
+                var issued = JsonSerializer.Deserialize<AccessPassEvent>(data, Options);
+                // Issued events carry Details; every other pass event carries Devices instead
+                if (issued?.Details is not null)
+                {
+                    Console.WriteLine($"{issued.Id} issued on {issued.Details.Platform}");
+                }
+                break;
+
+            case "ag.access_pass.activated":
+                var activated = JsonSerializer.Deserialize<AccessPassEvent>(data, Options);
+                if (activated?.Devices is not null)
+                {
+                    foreach (var device in activated.Devices)
+                    {
+                        Console.WriteLine($"{activated.Id} active on {device.Type}");
+                    }
+                }
+                break;
+
+            case "ag.landing_page.created":
+                var page = JsonSerializer.Deserialize<LandingPageEvent>(data, Options);
+                Console.WriteLine($"Landing page {page?.Id} created");
+                break;
+        }
+    }
+}
+```
+
+Each event family has an enum of its event names and a type for its payload. The enums deserialize from the envelope's `type` string if you prefer switching on a typed value over a literal:
+
+```csharp
+var eventType = JsonSerializer.Deserialize<AccessPassEventType>($"\"{envelope.Type}\"", Options);
+```
+
+| Event family | Event names | Payload type |
+| --- | --- | --- |
+| Access pass | `AccessPassEventType` | `AccessPassEvent` |
+| Card template | `CardTemplateEventType` | `CardTemplateEvent` |
+| Card template pair | `CardTemplatePairEventType` | `CardTemplatePairEvent` |
+| Landing page | `LandingPageEventType` | `LandingPageEvent` |
+| Credential profile | `CredentialProfileEventType` | `CredentialProfileEvent` |
+| HID organization | `HIDOrgEventType` | `HIDOrgEvent` |
+| Account balance | `AccountBalanceEventType` | `AccountBalanceEvent` |
+| Webhook | `WebhookEventType` | `WebhookEvent` |
+
 ### HID Organizations
 
 #### Create an HID org
