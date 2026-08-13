@@ -288,6 +288,7 @@ public async Task CreateTemplateAsync()
 ```csharp
 using AccessGrid;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public async Task UpdateTemplateAsync()
@@ -313,11 +314,17 @@ public async Task UpdateTemplateAsync()
          SupportPhoneNumber = "+1-555-123-4567",
          SupportEmail = "support@yourcompany.com",
          PrivacyPolicyUrl = "https://yourcompany.com/privacy",
-         TermsAndConditionsUrl = "https://yourcompany.com/terms"
+         TermsAndConditionsUrl = "https://yourcompany.com/terms",
+         Metadata = new Dictionary<string, object>
+         {
+             ["department"] = "engineering",
+             ["cost_center"] = "1234"
+         }
      }
    );
 
    Console.WriteLine($"Template updated successfully: {template.Id}");
+   Console.WriteLine($"Department: {template.Metadata["department"]}");
 }
 ```
 
@@ -326,6 +333,7 @@ public async Task UpdateTemplateAsync()
 ```csharp
 using AccessGrid;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public async Task ReadTemplateAsync()
@@ -341,7 +349,12 @@ public async Task ReadTemplateAsync()
    Console.WriteLine($"Name: {template.Name}");
    Console.WriteLine($"Platform: {template.Platform}");
    Console.WriteLine($"Protocol: {template.Protocol}");
-   Console.WriteLine($"Multi-device: {template.AllowOnMultipleDevices}");
+   Console.WriteLine($"Device counts: {template.AllowedDeviceCounts}");
+
+   foreach (var entry in template.Metadata ?? new Dictionary<string, object>())
+   {
+       Console.WriteLine($"{entry.Key}: {entry.Value}");
+   }
 }
 ```
 
