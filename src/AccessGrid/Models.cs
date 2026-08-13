@@ -1209,7 +1209,7 @@ namespace AccessGrid
     public class CredentialProfileEvent
     {
         [JsonPropertyName("credential_profile_id")]
-        string Id { get; set; }
+        public string Id { get; set; }
     }
 
     /// <summary>
