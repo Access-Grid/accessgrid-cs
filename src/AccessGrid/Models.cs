@@ -1222,6 +1222,21 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// The CloudEvents data of a HID organization webhook event
+    /// </summary>
+    public class HIDOrgEvent
+    {
+        [JsonPropertyName("account_org_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("slug")]
+        public string? Slug { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+    }
+
+    /// <summary>
     /// The CloudEvents data of a card template webhook event
     /// </summary>
     public class CardTemplateEvent
