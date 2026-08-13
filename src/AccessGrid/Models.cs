@@ -1213,6 +1213,15 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// The CloudEvents data of a landing page webhook event
+    /// </summary>
+    public class LandingPageEvent
+    {
+        [JsonPropertyName("landing_page_id")]
+        public string Id { get; set; }
+    }
+
+    /// <summary>
     /// The CloudEvents data of a card template webhook event
     /// </summary>
     public class CardTemplateEvent
