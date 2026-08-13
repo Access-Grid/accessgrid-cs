@@ -110,14 +110,29 @@ namespace AccessGrid
         [JsonStringEnumMemberName("ag.access_pass.deleted")]
         Deleted = 7,
 
-        [JsonStringEnumMemberName("ag.access_pass.device_added")]
+        [JsonStringEnumMemberName("ag.access_pass.devices.added")]
         DeviceAdded = 8,
 
-        [JsonStringEnumMemberName("ag.access_pass.device_removed")]
+        [JsonStringEnumMemberName("ag.access_pass.devices.removed")]
         DeviceRemoved = 9,
 
         [JsonStringEnumMemberName("ag.access_pass.expired")]
-        Expired = 10
+        Expired = 10,
+
+        [JsonStringEnumMemberName("ag.access_pass.failed")]
+        Failed = 11,
+
+        [JsonStringEnumMemberName("ag.access_pass.activated")]
+        Activated = 12,
+
+        [JsonStringEnumMemberName("ag.access_pass.renewed")]
+        Renewed = 13,
+
+        [JsonStringEnumMemberName("ag.access_pass.devices.suspended")]
+        DeviceSuspended = 14,
+
+        [JsonStringEnumMemberName("ag.access_pass.devices.resumed")]
+        DeviceResumed = 15
     }
 
     public enum CardTemplateEventType
@@ -128,11 +143,14 @@ namespace AccessGrid
         [JsonStringEnumMemberName("ag.card_template.updated")]
         Updated = 2,
 
-        [JsonStringEnumMemberName("ag.card_template.request_publishing")]
+        [JsonStringEnumMemberName("ag.card_template.requested_publishing")]
         RequestPublishing = 3,
 
         [JsonStringEnumMemberName("ag.card_template.published")]
         Published = 4,
+
+        [JsonStringEnumMemberName("ag.card_template.deleted")]
+        Deleted = 5,
     }
 
     public enum LandingPageEventType
@@ -152,6 +170,9 @@ namespace AccessGrid
         [JsonStringEnumMemberName("ag.credential_profile.created")]
         Created = 1,
 
+        [JsonStringEnumMemberName("ag.credential_profile.deleted")]
+        Deleted = 2,
+
         [JsonStringEnumMemberName("ag.credential_profile.attached_to_template")]
         AttachedToTemplate = 3
     }
@@ -169,5 +190,17 @@ namespace AccessGrid
     {
         [JsonStringEnumMemberName("ag.account_balance.low")]
         Low = 1
+    }
+
+    public enum WebhookEventType
+    {
+        [JsonStringEnumMemberName("ag.webhook.cert_expiring")]
+        CertExpiring = 1
+    }
+
+    public enum CardTemplatePairEventType
+    {
+        [JsonStringEnumMemberName("ag.card_template_pair.created")]
+        Created = 1
     }
 }
