@@ -1267,6 +1267,24 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// The CloudEvents data of a webhook lifecycle event
+    /// </summary>
+    public class WebhookEvent
+    {
+        [JsonPropertyName("webhook_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("webhook_name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("cert_expires_at")]
+        public DateTimeOffset? CertExpiresAt { get; set; }
+
+        [JsonPropertyName("days_until_expiration")]
+        public int? DaysUntilExpiration { get; set; }
+    }
+
+    /// <summary>
     /// The CloudEvents data of a card template webhook event
     /// </summary>
     public class CardTemplateEvent
