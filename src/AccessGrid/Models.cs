@@ -1237,6 +1237,36 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// The CloudEvents data of an account balance webhook event
+    /// </summary>
+    public class AccountBalanceEvent
+    {
+        [JsonPropertyName("account_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("organization_name")]
+        public string? OrganizationName { get; set; }
+
+        /// <summary>
+        /// Current balance in dollars
+        /// </summary>
+        [JsonPropertyName("current_balance")]
+        public decimal? CurrentBalance { get; set; }
+
+        /// <summary>
+        /// Low balance threshold in dollars
+        /// </summary>
+        [JsonPropertyName("threshold")]
+        public decimal? Threshold { get; set; }
+
+        /// <summary>
+        /// How far below the threshold the balance is, in dollars
+        /// </summary>
+        [JsonPropertyName("amount_below_threshold")]
+        public decimal? AmountBelowThreshold { get; set; }
+    }
+
+    /// <summary>
     /// The CloudEvents data of a card template webhook event
     /// </summary>
     public class CardTemplateEvent
