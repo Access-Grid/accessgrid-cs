@@ -264,7 +264,7 @@ public class ConsoleServiceTests
         }
         """;
 
-        string capturedBody = null;
+        string? capturedBody = null;
         _mockHttpClient
             .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
             .Returns<HttpRequestMessage>(async req =>
@@ -344,7 +344,7 @@ public class ConsoleServiceTests
         }
         """;
 
-        string capturedBody = null;
+        string? capturedBody = null;
         _mockHttpClient
             .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
             .Returns<HttpRequestMessage>(async req =>
@@ -776,7 +776,7 @@ public class ConsoleServiceTests
     {
         var json = """{ "id": "tmpl-123", "name": "Test" }""";
 
-        string capturedBody = null;
+        string? capturedBody = null;
         _mockHttpClient
             .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
             .Returns<HttpRequestMessage>(async req =>
@@ -1414,7 +1414,7 @@ public class ConsoleServiceTests
         }
         """;
 
-        string capturedBody = null;
+        string? capturedBody = null;
         _mockHttpClient
             .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
             .Returns<HttpRequestMessage>(async req =>

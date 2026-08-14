@@ -36,7 +36,7 @@ public class AccessPassEventTests
         }
         """;
 
-        var evt = JsonSerializer.Deserialize<AccessPassEvent>(json, _jsonOptions);
+        var evt = JsonSerializer.Deserialize<AccessPassEvent>(json, _jsonOptions)!;
 
         Assert.That(evt.AppleUserId, Is.EqualTo("001234.abc567def890.1234"));
     }
@@ -54,7 +54,7 @@ public class AccessPassEventTests
         }
         """;
 
-        var evt = JsonSerializer.Deserialize<AccessPassEvent>(json, _jsonOptions);
+        var evt = JsonSerializer.Deserialize<AccessPassEvent>(json, _jsonOptions)!;
 
         Assert.That(evt.AppleUserId, Is.Null);
     }
@@ -73,7 +73,7 @@ public class AccessPassEventTests
         }
         """;
 
-        var evt = JsonSerializer.Deserialize<AccessPassEvent>(json, _jsonOptions);
+        var evt = JsonSerializer.Deserialize<AccessPassEvent>(json, _jsonOptions)!;
 
         Assert.That(evt.AppleUserId, Is.Null);
     }

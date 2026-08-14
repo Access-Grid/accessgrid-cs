@@ -60,11 +60,11 @@ namespace AccessGrid
         }
 
         /// <summary>
-        /// Lists NFC keys provisioned for a particular card template
+        /// Lists NFC keys provisioned for a particular card template, with pagination info
         /// </summary>
         /// <param name="request">List keys request parameters</param>
-        /// <returns>List of AccessCard objects</returns>
-        public async Task<List<AccessCard>> ListAsync(ListKeysRequest request)
+        /// <returns>A page of AccessCard objects plus the pagination totals</returns>
+        public async Task<AccessCardsResponse> ListPagedAsync(ListKeysRequest request)
         {
             var queryParams = new Dictionary<string, string>();
 
@@ -74,8 +74,37 @@ namespace AccessGrid
             if (!string.IsNullOrEmpty(request.State))
                 queryParams.Add("state", request.State);
 
+            if (request.Page.HasValue)
+                queryParams.Add("page", request.Page.Value.ToString());
+
+            if (request.PerPage.HasValue)
+                queryParams.Add("per_page", request.PerPage.Value.ToString());
+
             var response = await _apiService.GetAsync<KeysListResponse>("/v1/key-cards", queryParams);
-            return response?.Keys ?? new List<AccessCard>();
+
+            return new AccessCardsResponse
+            {
+                Keys = response?.Keys ?? new List<AccessCard>(),
+                Pagination = new PaginationInfo
+                {
+                    CurrentPage = response?.Page ?? 0,
+                    PerPage = response?.PerPage ?? 0,
+                    TotalPages = response?.TotalPages ?? 0,
+                    TotalCount = response?.TotalCount ?? 0
+                }
+            };
+        }
+
+        /// <summary>
+        /// Lists NFC keys provisioned for a particular card template.
+        /// Returns the current page only — use ListPagedAsync to see how many pages exist.
+        /// </summary>
+        /// <param name="request">List keys request parameters</param>
+        /// <returns>List of AccessCard objects</returns>
+        public async Task<List<AccessCard>> ListAsync(ListKeysRequest request)
+        {
+            var response = await ListPagedAsync(request);
+            return response.Keys;
         }
 
         private async Task<AccessCard> ManageAsync(string cardId, string action)
