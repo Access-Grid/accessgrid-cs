@@ -66,6 +66,45 @@ public async Task ListCardsAsync()
 }
 ```
 
+`ListAsync` returns a single page — 25 keys by default — with no indication of how many exist in total. Use `ListPagedAsync` when you need to know whether there are more, or to walk them all:
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task ListAllKeysAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    var page = 1;
+    while (true)
+    {
+        var result = await client.AccessCards.ListPagedAsync(new ListKeysRequest
+        {
+            TemplateId = "05d3adb00b5",
+            Page = page,
+            PerPage = 100
+        });
+
+        foreach (var key in result.Keys)
+        {
+            Console.WriteLine($"{key.Id} {key.FullName} [{key.State}]");
+        }
+
+        Console.WriteLine($"page {result.Pagination.CurrentPage} of {result.Pagination.TotalPages}, {result.Pagination.TotalCount} total");
+
+        if (page >= result.Pagination.TotalPages) break;
+        page++;
+    }
+}
+```
+
+`PerPage` accepts up to 100 and defaults to 25. `Page` defaults to 1. Both work on `ListAsync` too, but only `ListPagedAsync` exposes the `Pagination` block.
+
 ### Issuing an NFC Key
 
 ```csharp
@@ -1240,7 +1279,7 @@ public class AccessCardsApiTests
 | POST /v1/key-cards | `AccessCards.ProvisionAsync()` | Y |
 | GET /v1/key-cards/{id} | `AccessCards.GetAsync()` | Y |
 | PATCH /v1/key-cards/{id} | `AccessCards.UpdateAsync()` | Y |
-| GET /v1/key-cards | `AccessCards.ListAsync()` | Y |
+| GET /v1/key-cards | `AccessCards.ListAsync()`, `AccessCards.ListPagedAsync()` | Y |
 | POST /v1/key-cards/{id}/suspend | `AccessCards.SuspendAsync()` | Y |
 | POST /v1/key-cards/{id}/resume | `AccessCards.ResumeAsync()` | Y |
 | POST /v1/key-cards/{id}/unlink | `AccessCards.UnlinkAsync()` | Y |
