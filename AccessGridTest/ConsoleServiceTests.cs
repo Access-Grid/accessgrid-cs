@@ -1403,6 +1403,49 @@ public class ConsoleServiceTests
     }
 
     [Test]
+    public async Task HIDOrgsCreateAsync_SendsEmail()
+    {
+        var json = """
+        {
+            "id": "org_1",
+            "name": "My Org",
+            "slug": "my-org",
+            "status": "pending"
+        }
+        """;
+
+        string capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        await _client.Console.HID.Orgs.CreateAsync(new CreateHIDOrgRequest
+        {
+            Name = "My Org",
+            Email = "ada@example.com",
+            FullAddress = "1 Main St, NY NY",
+            Phone = "+1-555-0000",
+            FirstName = "Ada",
+            LastName = "Lovelace"
+        });
+
+        Assert.That(capturedBody, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedBody, Does.Contain("\"email\""));
+            Assert.That(capturedBody, Does.Contain("ada@example.com"));
+        });
+    }
+
+    [Test]
     public async Task HIDOrgsListAsync_ShouldReturnOrgs()
     {
         var json = """
