@@ -1064,6 +1064,12 @@ namespace AccessGrid
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Required if you intend to activate the organization later
+        /// </summary>
+        [JsonPropertyName("email")]
+        public string Email { get; set; }
+
         [JsonPropertyName("full_address")]
         public string FullAddress { get; set; }
 
