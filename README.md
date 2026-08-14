@@ -288,6 +288,7 @@ public async Task CreateTemplateAsync()
 ```csharp
 using AccessGrid;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public async Task UpdateTemplateAsync()
@@ -313,11 +314,17 @@ public async Task UpdateTemplateAsync()
          SupportPhoneNumber = "+1-555-123-4567",
          SupportEmail = "support@yourcompany.com",
          PrivacyPolicyUrl = "https://yourcompany.com/privacy",
-         TermsAndConditionsUrl = "https://yourcompany.com/terms"
+         TermsAndConditionsUrl = "https://yourcompany.com/terms",
+         Metadata = new Dictionary<string, object>
+         {
+             ["department"] = "engineering",
+             ["cost_center"] = "1234"
+         }
      }
    );
 
    Console.WriteLine($"Template updated successfully: {template.Id}");
+   Console.WriteLine($"Department: {template.Metadata["department"]}");
 }
 ```
 
@@ -326,6 +333,7 @@ public async Task UpdateTemplateAsync()
 ```csharp
 using AccessGrid;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public async Task ReadTemplateAsync()
@@ -341,7 +349,12 @@ public async Task ReadTemplateAsync()
    Console.WriteLine($"Name: {template.Name}");
    Console.WriteLine($"Platform: {template.Platform}");
    Console.WriteLine($"Protocol: {template.Protocol}");
-   Console.WriteLine($"Multi-device: {template.AllowOnMultipleDevices}");
+   Console.WriteLine($"Device counts: {template.AllowedDeviceCounts}");
+
+   foreach (var entry in template.Metadata ?? new Dictionary<string, object>())
+   {
+       Console.WriteLine($"{entry.Key}: {entry.Value}");
+   }
 }
 ```
 
@@ -736,6 +749,83 @@ public async Task ManageWebhooksAsync()
     await client.Console.Webhooks.DeleteAsync(newWebhook.Id);
 }
 ```
+
+#### Handling incoming webhook events
+
+Deliveries arrive as [CloudEvents](https://cloudevents.io/) JSON with `Content-Type: application/cloudevents+json`. The SDK provides types for the `data` block of each event; you parse the envelope and dispatch on its `type` field.
+
+Envelope field names are lowercase (`specversion`, `dataschema`), so deserialize with `PropertyNameCaseInsensitive = true` or your envelope properties will silently come back null.
+
+```csharp
+using AccessGrid;
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+public record CloudEvent(string SpecVersion, string Id, string Source, string Type, string Time, JsonElement Data);
+
+public class WebhookHandler
+{
+    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
+
+    public void HandleDelivery(string body)
+    {
+        var envelope = JsonSerializer.Deserialize<CloudEvent>(body, Options);
+        if (envelope is null) return;
+
+        var data = envelope.Data.GetRawText();
+
+        switch (envelope.Type)
+        {
+            case "ag.access_pass.issued":
+                var issued = JsonSerializer.Deserialize<AccessPassEvent>(data, Options);
+                // Issued events carry Details; every other pass event carries Devices instead
+                if (issued?.Details is not null)
+                {
+                    Console.WriteLine($"{issued.Id} issued on {issued.Details.Platform}");
+                }
+                break;
+
+            case "ag.access_pass.activated":
+                var activated = JsonSerializer.Deserialize<AccessPassEvent>(data, Options);
+                if (activated?.Devices is not null)
+                {
+                    foreach (var device in activated.Devices)
+                    {
+                        Console.WriteLine($"{activated.Id} active on {device.Type}");
+                    }
+                }
+                break;
+
+            case "ag.landing_page.created":
+                var page = JsonSerializer.Deserialize<LandingPageEvent>(data, Options);
+                Console.WriteLine($"Landing page {page?.Id} created");
+                break;
+        }
+    }
+}
+```
+
+Each event family has an enum of its event names and a type for its payload. The enums deserialize from the envelope's `type` string if you prefer switching on a typed value over a literal:
+
+```csharp
+var eventType = JsonSerializer.Deserialize<AccessPassEventType>($"\"{envelope.Type}\"", Options);
+```
+
+| Event family | Event names | Payload type |
+| --- | --- | --- |
+| Access pass | `AccessPassEventType` | `AccessPassEvent` |
+| Card template | `CardTemplateEventType` | `CardTemplateEvent` |
+| Card template pair | `CardTemplatePairEventType` | `CardTemplatePairEvent` |
+| Landing page | `LandingPageEventType` | `LandingPageEvent` |
+| Credential profile | `CredentialProfileEventType` | `CredentialProfileEvent` |
+| HID organization | `HIDOrgEventType` | `HIDOrgEvent` |
+| Account balance | `AccountBalanceEventType` | `AccountBalanceEvent` |
+| Webhook | `WebhookEventType` | `WebhookEvent` |
 
 ### HID Organizations
 

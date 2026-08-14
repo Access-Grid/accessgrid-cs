@@ -201,7 +201,7 @@ public class ConsoleServiceTests
             "id": "tmpl-new",
             "name": "Employee NFC Key",
             "platform": "apple",
-            "use_case": "employee_badge",
+            "use_case": "corporate_id",
             "protocol": "desfire",
             "created_at": "2025-03-01T00:00:00Z",
             "issued_keys_count": 0,
@@ -215,7 +215,7 @@ public class ConsoleServiceTests
         {
             Name = "Employee NFC Key",
             Platform = Platform.Apple,
-            UseCase = "employee_badge",
+            UseCase = "corporate_id",
             Protocol = Protocol.DESFire,
             AllowOnMultipleDevices = true,
             WatchCount = 2,
@@ -240,7 +240,7 @@ public class ConsoleServiceTests
         Assert.That(result.Id, Is.EqualTo("tmpl-new"));
         Assert.That(result.Name, Is.EqualTo("Employee NFC Key"));
         Assert.That(result.Platform, Is.EqualTo("apple"));
-        Assert.That(result.UseCase, Is.EqualTo("employee_badge"));
+        Assert.That(result.UseCase, Is.EqualTo("corporate_id"));
         Assert.That(result.Protocol, Is.EqualTo("desfire"));
         Assert.That(result.IssuedKeysCount, Is.EqualTo(0));
 
@@ -258,7 +258,7 @@ public class ConsoleServiceTests
             "id": "tmpl-flat",
             "name": "Flat Params Template",
             "platform": "apple",
-            "use_case": "employee_badge",
+            "use_case": "corporate_id",
             "protocol": "desfire",
             "metadata": { "version": "2.1" }
         }
@@ -281,7 +281,7 @@ public class ConsoleServiceTests
         {
             Name = "Flat Params Template",
             Platform = Platform.Apple,
-            UseCase = "employee_badge",
+            UseCase = "corporate_id",
             Protocol = Protocol.DESFire,
             BackgroundColor = "#FFFFFF",
             SupportUrl = "https://help.yourcompany.com",
@@ -299,6 +299,145 @@ public class ConsoleServiceTests
         Assert.That(capturedBody, Does.Contain("all_devices"));
         Assert.That(capturedBody, Does.Not.Contain("\"design\""));
         Assert.That(capturedBody, Does.Not.Contain("\"support_info\""));
+    }
+
+    [Test]
+    public async Task CreateTemplateAsync_ReadsMetadataBack()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge",
+            "metadata": { "department": "eng", "cost_center": "1234" }
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.CreateTemplateAsync(new CreateTemplateRequest
+        {
+            Name = "Corporate Badge",
+            Platform = Platform.Apple,
+            UseCase = "corporate_id",
+            Protocol = Protocol.DESFire
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Metadata, Is.Not.Null);
+            Assert.That(result.Metadata["department"].ToString(), Is.EqualTo("eng"));
+            Assert.That(result.Metadata["cost_center"].ToString(), Is.EqualTo("1234"));
+        });
+    }
+
+    #endregion
+
+    #region UpdateTemplateAsync
+
+    [Test]
+    public async Task UpdateTemplateAsync_SendsMetadata()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge",
+            "metadata": { "department": "eng" }
+        }
+        """;
+
+        string capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        await _client.Console.UpdateTemplateAsync(new UpdateTemplateRequest
+        {
+            CardTemplateId = "tmpl-123",
+            Name = "Corporate Badge",
+            Metadata = new Dictionary<string, object> { ["department"] = "eng" }
+        });
+
+        Assert.That(capturedBody, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedBody, Does.Contain("\"metadata\""));
+            Assert.That(capturedBody, Does.Contain("department"));
+            Assert.That(capturedBody, Does.Contain("eng"));
+        });
+    }
+
+    [Test]
+    public async Task UpdateTemplateAsync_ReadsMetadataBack()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge",
+            "metadata": { "department": "eng" }
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.UpdateTemplateAsync(new UpdateTemplateRequest
+        {
+            CardTemplateId = "tmpl-123",
+            Metadata = new Dictionary<string, object> { ["department"] = "eng" }
+        });
+
+        Assert.That(result.Metadata["department"].ToString(), Is.EqualTo("eng"));
+    }
+
+    #endregion
+
+    #region ReadTemplateAsync
+
+    [Test]
+    public async Task ReadTemplateAsync_ReturnsMetadata()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge",
+            "platform": "apple",
+            "use_case": "corporate_id",
+            "protocol": "desfire",
+            "metadata": { "department": "eng", "cost_center": "1234" }
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.ReadTemplateAsync("tmpl-123");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Id, Is.EqualTo("tmpl-123"));
+            Assert.That(result.Metadata, Is.Not.Null);
+            Assert.That(result.Metadata["department"].ToString(), Is.EqualTo("eng"));
+            Assert.That(result.Metadata["cost_center"].ToString(), Is.EqualTo("1234"));
+        });
+    }
+
+    [Test]
+    public async Task ReadTemplateAsync_HasNullMetadata_WhenAbsent()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.ReadTemplateAsync("tmpl-123");
+
+        Assert.That(result.Metadata, Is.Null);
     }
 
     #endregion
@@ -598,7 +737,7 @@ public class ConsoleServiceTests
             "id": "tmpl-123",
             "name": "Updated Badge",
             "platform": "apple",
-            "use_case": "employee_badge",
+            "use_case": "corporate_id",
             "protocol": "desfire"
         }
         """;
@@ -679,7 +818,7 @@ public class ConsoleServiceTests
             "id": "tmpl-456",
             "name": "Visitor Pass",
             "platform": "google",
-            "use_case": "employee_badge",
+            "use_case": "corporate_id",
             "protocol": "desfire",
             "created_at": "2025-01-15T00:00:00Z",
             "last_published_at": "2025-02-01T00:00:00Z",
@@ -809,7 +948,7 @@ public class ConsoleServiceTests
                             "name": "Employee Badge",
                             "protocol": "desfire",
                             "platform": "apple",
-                            "use_case": "employee_badge"
+                            "use_case": "corporate_id"
                         }
                     }
                 }
@@ -848,7 +987,7 @@ public class ConsoleServiceTests
         Assert.That(pt.Name, Is.EqualTo("Employee Badge"));
         Assert.That(pt.Protocol, Is.EqualTo("desfire"));
         Assert.That(pt.Platform, Is.EqualTo("apple"));
-        Assert.That(pt.UseCase, Is.EqualTo("employee_badge"));
+        Assert.That(pt.UseCase, Is.EqualTo("corporate_id"));
 
         Assert.That(result.Pagination.TotalCount, Is.EqualTo(1));
     }
@@ -1012,7 +1151,7 @@ public class ConsoleServiceTests
                             "name": "Visitor Badge",
                             "protocol": "desfire",
                             "platform": "apple",
-                            "use_case": "employee_badge"
+                            "use_case": "corporate_id"
                         }
                     }
                 }

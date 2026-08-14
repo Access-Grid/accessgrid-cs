@@ -317,6 +317,9 @@ namespace AccessGrid
 
         [JsonPropertyName("style_settings")]
         public object StyleSettings { get; set; }
+
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
     }
 
     public class ListKeysRequest
@@ -624,6 +627,12 @@ namespace AccessGrid
         /// </summary>
         [JsonPropertyName("terms_and_conditions_url")]
         public string TermsAndConditionsUrl { get; set; }
+
+        /// <summary>
+        /// Optional metadata key-value pairs
+        /// </summary>
+        [JsonPropertyName("metadata")]
+        public Dictionary<string, object> Metadata { get; set; }
     }
 
     public class EventLogFilters
@@ -1209,7 +1218,112 @@ namespace AccessGrid
     public class CredentialProfileEvent
     {
         [JsonPropertyName("credential_profile_id")]
-        string Id { get; set; }
+        public string Id { get; set; }
+    }
+
+    /// <summary>
+    /// The CloudEvents data of a landing page webhook event
+    /// </summary>
+    public class LandingPageEvent
+    {
+        [JsonPropertyName("landing_page_id")]
+        public string Id { get; set; }
+    }
+
+    /// <summary>
+    /// The CloudEvents data of a HID organization webhook event
+    /// </summary>
+    public class HIDOrgEvent
+    {
+        [JsonPropertyName("account_org_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("slug")]
+        public string? Slug { get; set; }
+
+        [JsonPropertyName("name")]
+        public string? Name { get; set; }
+    }
+
+    /// <summary>
+    /// The CloudEvents data of an account balance webhook event
+    /// </summary>
+    public class AccountBalanceEvent
+    {
+        [JsonPropertyName("account_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("organization_name")]
+        public string? OrganizationName { get; set; }
+
+        /// <summary>
+        /// Current balance in dollars
+        /// </summary>
+        [JsonPropertyName("current_balance")]
+        public decimal? CurrentBalance { get; set; }
+
+        /// <summary>
+        /// Low balance threshold in dollars
+        /// </summary>
+        [JsonPropertyName("threshold")]
+        public decimal? Threshold { get; set; }
+
+        /// <summary>
+        /// How far below the threshold the balance is, in dollars
+        /// </summary>
+        [JsonPropertyName("amount_below_threshold")]
+        public decimal? AmountBelowThreshold { get; set; }
+    }
+
+    /// <summary>
+    /// The CloudEvents data of a webhook lifecycle event
+    /// </summary>
+    public class WebhookEvent
+    {
+        [JsonPropertyName("webhook_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("webhook_name")]
+        public string? Name { get; set; }
+
+        [JsonPropertyName("cert_expires_at")]
+        public DateTimeOffset? CertExpiresAt { get; set; }
+
+        [JsonPropertyName("days_until_expiration")]
+        public int? DaysUntilExpiration { get; set; }
+    }
+
+    /// <summary>
+    /// The CloudEvents data of a card template pair webhook event
+    /// </summary>
+    public class CardTemplatePairEvent
+    {
+        [JsonPropertyName("card_template_pair_id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+
+        [JsonPropertyName("ios_template")]
+        public CardTemplatePairEventTemplate IosTemplate { get; set; }
+
+        [JsonPropertyName("android_template")]
+        public CardTemplatePairEventTemplate AndroidTemplate { get; set; }
+
+        public class CardTemplatePairEventTemplate
+        {
+            [JsonPropertyName("id")]
+            public string Id { get; set; }
+
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
+
+            [JsonPropertyName("platform")]
+            public Platform Platform { get; set; }
+
+            [JsonPropertyName("protocol")]
+            public Protocol Protocol { get; set; }
+        }
     }
 
     /// <summary>
