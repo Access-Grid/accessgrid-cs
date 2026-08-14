@@ -402,7 +402,7 @@ public class AccessCardsServiceTests
     [Test]
     public async Task ListPagedAsync_SendsPagingParams_WhenSet()
     {
-        HttpRequestMessage captured = null;
+        HttpRequestMessage? captured = null;
         _mockHttpClient
             .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
             .Returns<HttpRequestMessage>(req =>
@@ -435,7 +435,7 @@ public class AccessCardsServiceTests
     [Test]
     public async Task ListPagedAsync_OmitsPagingParams_WhenNotSet()
     {
-        HttpRequestMessage captured = null;
+        HttpRequestMessage? captured = null;
         _mockHttpClient
             .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
             .Returns<HttpRequestMessage>(req =>
@@ -489,7 +489,7 @@ public class AccessCardsServiceTests
     [Test]
     public async Task ListAsync_SendsOnlyTemplateAndState_WhenPagingUnset()
     {
-        HttpRequestMessage captured = null;
+        HttpRequestMessage? captured = null;
         _mockHttpClient
             .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
             .Returns<HttpRequestMessage>(req =>
