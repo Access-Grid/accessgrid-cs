@@ -333,6 +333,16 @@ namespace AccessGrid
         /// Filter keys by state (active, suspended, unlink, deleted)
         /// </summary>
         public string State { get; set; }
+
+        /// <summary>
+        /// Page number (defaults to 1)
+        /// </summary>
+        public int? Page { get; set; }
+
+        /// <summary>
+        /// Items per page, max 100 (defaults to 25)
+        /// </summary>
+        public int? PerPage { get; set; }
     }
 
     public class ProvisionCardRequest : AccessCard
@@ -683,6 +693,28 @@ namespace AccessGrid
     {
         [JsonPropertyName("keys")]
         public List<AccessCard> Keys { get; set; } = new List<AccessCard>();
+
+        [JsonPropertyName("page")]
+        public int Page { get; set; }
+
+        [JsonPropertyName("per_page")]
+        public int PerPage { get; set; }
+
+        [JsonPropertyName("total_pages")]
+        public int TotalPages { get; set; }
+
+        [JsonPropertyName("total_count")]
+        public int TotalCount { get; set; }
+    }
+
+    /// <summary>
+    /// A page of access passes with pagination info
+    /// </summary>
+    public class AccessCardsResponse
+    {
+        public List<AccessCard> Keys { get; set; } = new List<AccessCard>();
+
+        public PaginationInfo Pagination { get; set; }
     }
 
     /// <summary>

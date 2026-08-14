@@ -359,4 +359,174 @@ public class AccessCardsServiceTests
     }
 
     #endregion
+
+    #region ListAsync / ListPagedAsync
+
+    // The endpoint returns pagination counts flat at the root, not nested under "pagination"
+    // like the other paginated endpoints do.
+    private const string PagedKeysJson = """
+    {
+        "status": "success",
+        "count": 2,
+        "total_count": 80,
+        "page": 1,
+        "per_page": 2,
+        "total_pages": 40,
+        "keys": [
+            { "id": "ap_1", "full_name": "Jane Doe", "state": "active" },
+            { "id": "ap_2", "full_name": "John Roe", "state": "active" }
+        ]
+    }
+    """;
+
+    [Test]
+    public async Task ListPagedAsync_ExposesPagination()
+    {
+        StubHttpResponse(PagedKeysJson);
+
+        var result = await _httpClient.AccessCards.ListPagedAsync(new ListKeysRequest
+        {
+            TemplateId = "tmpl-123"
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Keys, Has.Count.EqualTo(2));
+            Assert.That(result.Pagination.CurrentPage, Is.EqualTo(1));
+            Assert.That(result.Pagination.PerPage, Is.EqualTo(2));
+            Assert.That(result.Pagination.TotalPages, Is.EqualTo(40));
+            Assert.That(result.Pagination.TotalCount, Is.EqualTo(80));
+        });
+    }
+
+    [Test]
+    public async Task ListPagedAsync_SendsPagingParams_WhenSet()
+    {
+        HttpRequestMessage captured = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(req =>
+            {
+                captured = req;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(PagedKeysJson, Encoding.UTF8, "application/json")
+                });
+            });
+
+        await _httpClient.AccessCards.ListPagedAsync(new ListKeysRequest
+        {
+            TemplateId = "tmpl-123",
+            State = "active",
+            Page = 2,
+            PerPage = 50
+        });
+
+        var url = captured!.RequestUri!.ToString();
+        Assert.Multiple(() =>
+        {
+            Assert.That(url, Does.Contain("template_id=tmpl-123"));
+            Assert.That(url, Does.Contain("state=active"));
+            Assert.That(url, Does.Contain("page=2"));
+            Assert.That(url, Does.Contain("per_page=50"));
+        });
+    }
+
+    [Test]
+    public async Task ListPagedAsync_OmitsPagingParams_WhenNotSet()
+    {
+        HttpRequestMessage captured = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(req =>
+            {
+                captured = req;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(PagedKeysJson, Encoding.UTF8, "application/json")
+                });
+            });
+
+        await _httpClient.AccessCards.ListPagedAsync(new ListKeysRequest { TemplateId = "tmpl-123" });
+
+        var url = captured!.RequestUri!.ToString();
+        Assert.Multiple(() =>
+        {
+            Assert.That(url, Does.Not.Contain("page="));
+            Assert.That(url, Does.Not.Contain("per_page="));
+        });
+    }
+
+    [Test]
+    public async Task ListPagedAsync_HandlesEmptyKeys()
+    {
+        StubHttpResponse("""
+        { "status": "success", "count": 0, "total_count": 0, "page": 1, "per_page": 25, "total_pages": 0, "keys": [] }
+        """);
+
+        var result = await _httpClient.AccessCards.ListPagedAsync(new ListKeysRequest { TemplateId = "tmpl-123" });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Keys, Is.Empty);
+            Assert.That(result.Pagination.TotalCount, Is.EqualTo(0));
+        });
+    }
+
+    // Back-compat: ListAsync keeps its signature, still returns just the list,
+    // and sends the same query params it always did.
+    [Test]
+    public async Task ListAsync_ReturnsOnlyTheKeys()
+    {
+        StubHttpResponse(PagedKeysJson);
+
+        var result = await _httpClient.AccessCards.ListAsync(new ListKeysRequest { TemplateId = "tmpl-123" });
+
+        Assert.That(result, Has.Count.EqualTo(2));
+        Assert.That(result[0].Id, Is.EqualTo("ap_1"));
+    }
+
+    [Test]
+    public async Task ListAsync_SendsOnlyTemplateAndState_WhenPagingUnset()
+    {
+        HttpRequestMessage captured = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(req =>
+            {
+                captured = req;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(PagedKeysJson, Encoding.UTF8, "application/json")
+                });
+            });
+
+        await _httpClient.AccessCards.ListAsync(new ListKeysRequest
+        {
+            TemplateId = "tmpl-123",
+            State = "suspended"
+        });
+
+        var url = captured!.RequestUri!.ToString();
+        Assert.Multiple(() =>
+        {
+            Assert.That(url, Does.Contain("template_id=tmpl-123"));
+            Assert.That(url, Does.Contain("state=suspended"));
+            Assert.That(url, Does.Not.Contain("page="));
+            Assert.That(url, Does.Not.Contain("per_page="));
+        });
+    }
+
+    [Test]
+    public async Task ListAsync_ReturnsEmptyList_WhenResponseHasNoKeys()
+    {
+        StubHttpResponse("""{ "status": "success" }""");
+
+        var result = await _httpClient.AccessCards.ListAsync(new ListKeysRequest { TemplateId = "tmpl-123" });
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result, Is.Empty);
+    }
+
+    #endregion
 }
