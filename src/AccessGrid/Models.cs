@@ -1065,7 +1065,7 @@ namespace AccessGrid
         public string Name { get; set; }
 
         /// <summary>
-        /// Required to complete registration later — the activate endpoint looks the org up by email
+        /// Required if you intend to activate the organization later
         /// </summary>
         [JsonPropertyName("email")]
         public string Email { get; set; }

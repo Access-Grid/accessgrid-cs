@@ -846,6 +846,7 @@ public async Task CreateOrgAsync()
     var org = await client.Console.HID.Orgs.CreateAsync(new CreateHIDOrgRequest
     {
         Name = "My Org",
+        Email = "admin@example.com",
         FullAddress = "1 Main St, NY NY",
         Phone = "+1-555-0000",
         FirstName = "Ada",
