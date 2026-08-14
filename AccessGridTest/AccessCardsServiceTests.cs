@@ -315,7 +315,7 @@ public class AccessCardsServiceTests
     [Test]
     public async Task ProvisionAsync_SerializesMultiFamilyResidentFields()
     {
-        HttpRequestMessage capturedRequest = null;
+        HttpRequestMessage? capturedRequest = null;
         _mockHttpClient
             .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
             .Callback<HttpRequestMessage>(req => capturedRequest = req)
