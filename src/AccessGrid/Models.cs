@@ -1165,6 +1165,12 @@ namespace AccessGrid
         [JsonPropertyName("apple_user_id")]
         public string? AppleUserId { get; set; }
 
+        /// <summary>
+        /// Physical tag identifier of the pass, when one is assigned
+        /// </summary>
+        [JsonPropertyName("tag_id")]
+        public string? TagId { get; set; }
+
         [JsonPropertyName("card_templates")]
         public IReadOnlyList<AccessPassEventCardTemplate>? CardTemplates { get; set; }
 
