@@ -360,6 +360,41 @@ public class AccessCardsServiceTests
 
     #endregion
 
+    [Test]
+    public async Task GetAsync_DeserializesTagId()
+    {
+        var json = """
+        {
+            "id": "card-tag-1",
+            "install_url": "https://example.com/install",
+            "state": "active",
+            "tag_id": "DF517FC87144DF"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _httpClient.AccessCards.GetAsync("card-tag-1");
+
+        Assert.That(result.TagId, Is.EqualTo("DF517FC87144DF"));
+    }
+
+    [Test]
+    public async Task GetAsync_HasNullTagId_WhenAbsent()
+    {
+        var json = """
+        {
+            "id": "card-tag-2",
+            "install_url": "https://example.com/install",
+            "state": "active"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _httpClient.AccessCards.GetAsync("card-tag-2");
+
+        Assert.That(result.TagId, Is.Null);
+    }
+
     #region ListAsync / ListPagedAsync
 
     // The endpoint returns pagination counts flat at the root, not nested under "pagination"
