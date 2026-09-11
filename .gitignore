@@ -77,3 +77,5 @@ orleans.codegen.cs
 
 # KEYS
 *.snk
+# Local integration probes (not committed)
+.local/
