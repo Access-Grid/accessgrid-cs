@@ -192,6 +192,18 @@ namespace AccessGrid
         }
 
         /// <summary>
+        /// Renames a pass template pair. The two card templates it links can't be changed.
+        /// </summary>
+        /// <param name="pairId">ID of the pass template pair to update</param>
+        /// <param name="request">The new name</param>
+        /// <returns>The updated pass template pair</returns>
+        public async Task<PassTemplatePair> UpdatePassTemplatePairAsync(string pairId, UpdatePassTemplatePairRequest request)
+        {
+            var response = await _apiService.PutAsync<PassTemplatePair>($"/v1/console/card-template-pairs/{pairId}", request);
+            return response;
+        }
+
+        /// <summary>
         /// Deletes a pass template pair.
         ///
         /// The API refuses while any key issued through the pair is still live, and reports
@@ -393,6 +405,19 @@ namespace AccessGrid
         public async Task<CredentialProfile> CreateAsync(CreateCredentialProfileRequest request)
         {
             var response = await _apiService.PostAsync<CredentialProfile>("/v1/console/credential-profiles", request);
+            return response;
+        }
+
+        /// <summary>
+        /// Renames a credential profile. Keys, application and file settings are fixed once
+        /// the profile exists.
+        /// </summary>
+        /// <param name="credentialProfileId">ID of the credential profile to update</param>
+        /// <param name="request">The new name</param>
+        /// <returns>The updated credential profile</returns>
+        public async Task<CredentialProfile> UpdateAsync(string credentialProfileId, UpdateCredentialProfileRequest request)
+        {
+            var response = await _apiService.PutAsync<CredentialProfile>($"/v1/console/credential-profiles/{credentialProfileId}", request);
             return response;
         }
 

@@ -959,6 +959,16 @@ namespace AccessGrid
     }
 
     /// <summary>
+    /// Parameters for updating a pass template pair. Only the name can be changed; the two
+    /// card templates are fixed once the pair exists.
+    /// </summary>
+    public class UpdatePassTemplatePairRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+    }
+
+    /// <summary>
     /// A pass template reference within a ledger item's access pass
     /// </summary>
     public class LedgerItemPassTemplate
@@ -1712,6 +1722,16 @@ namespace AccessGrid
 
         [JsonPropertyName("source_key_index")]
         public int? SourceKeyIndex { get; set; }
+    }
+
+    /// <summary>
+    /// Parameters for updating a credential profile. Only the name can be changed; keys,
+    /// application and file settings are fixed once the profile exists.
+    /// </summary>
+    public class UpdateCredentialProfileRequest
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
     }
 
     /// <summary>

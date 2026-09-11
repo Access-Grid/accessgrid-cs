@@ -192,6 +192,67 @@ public class ConsoleServiceTests
     }
 
     [Test]
+    public async Task UpdatePassTemplatePairAsync_RenamesThePair()
+    {
+        var json = """
+        {
+            "id": "pair_1",
+            "ex_id": "pair_1",
+            "name": "Renamed Badge Pair",
+            "created_at": "2025-04-15T12:00:00Z",
+            "ios_template": { "id": "tmpl_ios", "ex_id": "tmpl_ios", "name": "iOS Badge", "platform": "apple" },
+            "android_template": { "id": "tmpl_android", "ex_id": "tmpl_android", "name": "Android Badge", "platform": "android" }
+        }
+        """;
+
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        var result = await _client.Console.UpdatePassTemplatePairAsync("pair_1", new UpdatePassTemplatePairRequest
+        {
+            Name = "Renamed Badge Pair"
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Name, Is.EqualTo("Renamed Badge Pair"));
+            Assert.That(result.IosTemplate.Platform, Is.EqualTo("apple"));
+            Assert.That(capturedBody, Does.Contain("\"name\":\"Renamed Badge Pair\""));
+        });
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Put &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-template-pairs/pair_1")
+        )), Times.Once);
+    }
+
+    [Test]
+    public void UpdatePassTemplatePairAsync_ThrowsWhenPairIsMissing()
+    {
+        StubHttpResponse(
+            """{"status": "error", "message": "Card template pair not found"}""",
+            HttpStatusCode.NotFound);
+
+        var ex = Assert.ThrowsAsync<AccessGridException>(
+            async () => await _client.Console.UpdatePassTemplatePairAsync("pair_missing", new UpdatePassTemplatePairRequest
+            {
+                Name = "Renamed Badge Pair"
+            }));
+
+        Assert.That(ex!.Message, Does.Contain("Card template pair not found"));
+    }
+
+    [Test]
     public async Task DeletePassTemplatePairAsync_DeletesThePair()
     {
         StubHttpResponse("""{"id": "pair_1", "deactivated": true}""");
@@ -2107,6 +2168,53 @@ public class ConsoleServiceTests
         _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
             req.Method == HttpMethod.Post &&
             req.RequestUri!.ToString().Contains("/v1/console/credential-profiles")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task CredentialProfilesUpdateAsync_RenamesTheProfile()
+    {
+        var json = """
+        {
+            "id": "cp_123",
+            "aid": "F56401",
+            "name": "Renamed Office Profile",
+            "apple_id": null,
+            "created_at": "2025-03-01T00:00:00Z",
+            "card_storage": "4K EV1",
+            "keys": [],
+            "files": []
+        }
+        """;
+
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        var result = await _client.Console.CredentialProfiles.UpdateAsync("cp_123", new UpdateCredentialProfileRequest
+        {
+            Name = "Renamed Office Profile"
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Id, Is.EqualTo("cp_123"));
+            Assert.That(result.Name, Is.EqualTo("Renamed Office Profile"));
+            Assert.That(capturedBody, Does.Contain("\"name\":\"Renamed Office Profile\""));
+        });
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Put &&
+            req.RequestUri!.ToString().Contains("/v1/console/credential-profiles/cp_123")
         )), Times.Once);
     }
 
