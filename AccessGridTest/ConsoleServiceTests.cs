@@ -191,6 +191,32 @@ public class ConsoleServiceTests
         )), Times.Once);
     }
 
+    [Test]
+    public async Task DeletePassTemplatePairAsync_DeletesThePair()
+    {
+        StubHttpResponse("""{"id": "pair_1", "deactivated": true}""");
+
+        await _client.Console.DeletePassTemplatePairAsync("pair_1");
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Delete &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-template-pairs/pair_1")
+        )), Times.Once);
+    }
+
+    [Test]
+    public void DeletePassTemplatePairAsync_ThrowsWhenKeysAreStillActive()
+    {
+        StubHttpResponse(
+            """{"status": "error", "message": "3 key(s) issued through this card template pair are not deleted. Delete them first.", "active_key_count": 3}""",
+            HttpStatusCode.UnprocessableEntity);
+
+        var ex = Assert.ThrowsAsync<AccessGridException>(
+            async () => await _client.Console.DeletePassTemplatePairAsync("pair_1"));
+
+        Assert.That(ex!.Message, Does.Contain("active_key_count"));
+    }
+
     #region CreateTemplateAsync
 
     [Test]

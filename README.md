@@ -554,6 +554,28 @@ public async Task CreatePassTemplatePairAsync()
 }
 ```
 
+### Deleting a Pass Template Pair
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task DeletePassTemplatePairAsync()
+{
+   var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+   var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+   using var client = new AccessGridClient(accountId, secretKey);
+
+   await client.Console.DeletePassTemplatePairAsync("0xpa1rt3mp14t3");
+
+   Console.WriteLine("Pair deleted");
+}
+```
+
+A pair can only be deleted once every key issued through it has been deleted. If any are still live, the call throws and the error names how many. Deleting the pair leaves both of its card templates in place, so delete those separately with `DeleteTemplateAsync` if you no longer need them.
+
 ### Getting Ledger Items
 
 ```csharp
@@ -1332,6 +1354,7 @@ public class AccessCardsApiTests
 | GET /v1/console/card-templates/{id}/logs | `Console.EventLogAsync()` | Y |
 | GET /v1/console/card-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
 | POST /v1/console/card-template-pairs | `Console.CreatePassTemplatePairAsync()` | Y |
+| DELETE /v1/console/card-template-pairs/{id} | `Console.DeletePassTemplatePairAsync()` | Y |
 | POST /v1/console/card-templates/{id}/ios_preflight | `Console.IosPreflightAsync()` | Y |
 | GET /v1/console/ledger-items | `Console.GetLedgerItemsAsync()` | Y |
 | GET /v1/console/landing-pages | `Console.ListLandingPagesAsync()` | Y |
