@@ -320,6 +320,67 @@ namespace AccessGrid
 
         [JsonPropertyName("metadata")]
         public Dictionary<string, object> Metadata { get; set; }
+
+        /// <summary>
+        /// Ids of the credential profiles attached to this card template
+        /// </summary>
+        [JsonPropertyName("credential_profiles")]
+        public List<string> CredentialProfiles { get; set; }
+
+        /// <summary>
+        /// Ids of the landing pages attached to this card template
+        /// </summary>
+        [JsonPropertyName("landing_pages")]
+        public List<string> LandingPages { get; set; }
+
+        /// <summary>
+        /// The API returns the image URLs grouped under an `images` key. Read them through
+        /// LogoUrl, BackgroundImageUrl, IconUrl and MemberPhotoUrl.
+        /// </summary>
+        [JsonPropertyName("images")]
+        public TemplateImages Images { get; set; }
+
+        /// <summary>
+        /// URL of the card logo, null when none is attached
+        /// </summary>
+        [JsonIgnore]
+        public string LogoUrl => Images?.Logo;
+
+        /// <summary>
+        /// URL of the card background, null when none is attached
+        /// </summary>
+        [JsonIgnore]
+        public string BackgroundImageUrl => Images?.BackgroundImage;
+
+        /// <summary>
+        /// URL of the card icon, null when none is attached
+        /// </summary>
+        [JsonIgnore]
+        public string IconUrl => Images?.Icon;
+
+        /// <summary>
+        /// URL of the cardholder photo, null when none is attached
+        /// </summary>
+        [JsonIgnore]
+        public string MemberPhotoUrl => Images?.MemberPhoto;
+    }
+
+    /// <summary>
+    /// Image URLs on a card template, as the API groups them
+    /// </summary>
+    public class TemplateImages
+    {
+        [JsonPropertyName("logo")]
+        public string Logo { get; set; }
+
+        [JsonPropertyName("background_image")]
+        public string BackgroundImage { get; set; }
+
+        [JsonPropertyName("icon")]
+        public string Icon { get; set; }
+
+        [JsonPropertyName("member_photo")]
+        public string MemberPhoto { get; set; }
     }
 
     public class ListKeysRequest

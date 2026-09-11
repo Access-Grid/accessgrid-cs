@@ -633,6 +633,95 @@ public class ConsoleServiceTests
         Assert.That(result.Metadata, Is.Null);
     }
 
+    [Test]
+    public async Task ReadTemplateAsync_ExposesImageUrlsAndAssociations()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge",
+            "images": {
+                "logo": "https://example.com/logo.png",
+                "background_image": "https://example.com/background.png",
+                "icon": "https://example.com/icon.png",
+                "member_photo": "https://example.com/member.png"
+            },
+            "credential_profiles": ["cp_1", "cp_2"],
+            "landing_pages": ["lp_1"]
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.ReadTemplateAsync("tmpl-123");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.LogoUrl, Is.EqualTo("https://example.com/logo.png"));
+            Assert.That(result.BackgroundImageUrl, Is.EqualTo("https://example.com/background.png"));
+            Assert.That(result.IconUrl, Is.EqualTo("https://example.com/icon.png"));
+            Assert.That(result.MemberPhotoUrl, Is.EqualTo("https://example.com/member.png"));
+            Assert.That(result.CredentialProfiles, Is.EqualTo(new List<string> { "cp_1", "cp_2" }));
+            Assert.That(result.LandingPages, Is.EqualTo(new List<string> { "lp_1" }));
+        });
+    }
+
+    [Test]
+    public async Task ReadTemplateAsync_HasNullImageUrls_WhenImagesAbsent()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.ReadTemplateAsync("tmpl-123");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.LogoUrl, Is.Null);
+            Assert.That(result.BackgroundImageUrl, Is.Null);
+            Assert.That(result.IconUrl, Is.Null);
+            Assert.That(result.MemberPhotoUrl, Is.Null);
+        });
+    }
+
+    [Test]
+    public async Task CreateTemplateAsync_ExposesImageUrlsFromResponse()
+    {
+        var json = """
+        {
+            "id": "tmpl-new",
+            "estimated_publishing_date": "2026-09-18T00:00:00Z",
+            "images": {
+                "logo": "https://example.com/logo.png",
+                "background_image": "https://example.com/background.png",
+                "icon": "https://example.com/icon.png",
+                "member_photo": null
+            },
+            "metadata": {}
+        }
+        """;
+        StubHttpResponse(json, HttpStatusCode.Created);
+
+        var result = await _client.Console.CreateTemplateAsync(new CreateTemplateRequest
+        {
+            Name = "Employee Access Pass",
+            Platform = Platform.Apple,
+            UseCase = "corporate_id",
+            Protocol = Protocol.DESFire
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.LogoUrl, Is.EqualTo("https://example.com/logo.png"));
+            Assert.That(result.BackgroundImageUrl, Is.EqualTo("https://example.com/background.png"));
+            Assert.That(result.IconUrl, Is.EqualTo("https://example.com/icon.png"));
+            Assert.That(result.MemberPhotoUrl, Is.Null);
+        });
+    }
+
     #endregion
 
     #region PublishTemplateAsync
