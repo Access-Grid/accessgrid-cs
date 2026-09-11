@@ -1932,6 +1932,32 @@ public class ConsoleServiceTests
         )), Times.Once);
     }
 
+    [Test]
+    public async Task DeleteLandingPageAsync_DeletesTheLandingPage()
+    {
+        StubHttpResponse("""{"id": "lp_1", "deactivated": true}""");
+
+        await _client.Console.DeleteLandingPageAsync("lp_1");
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Delete &&
+            req.RequestUri!.ToString().Contains("/v1/console/landing-pages/lp_1")
+        )), Times.Once);
+    }
+
+    [Test]
+    public void DeleteLandingPageAsync_ThrowsWhenTemplatesAreStillAttached()
+    {
+        StubHttpResponse(
+            """{"status": "error", "message": "2 card template(s) are attached to this landing page. Detach them first.", "active_pass_template_count": 2}""",
+            HttpStatusCode.UnprocessableEntity);
+
+        var ex = Assert.ThrowsAsync<AccessGridException>(
+            async () => await _client.Console.DeleteLandingPageAsync("lp_1"));
+
+        Assert.That(ex!.Message, Does.Contain("active_pass_template_count"));
+    }
+
     #endregion
 
     #region CredentialProfilesService

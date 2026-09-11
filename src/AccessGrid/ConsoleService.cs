@@ -253,6 +253,18 @@ namespace AccessGrid
         }
 
         /// <summary>
+        /// Deletes a landing page.
+        ///
+        /// The API refuses while any active card template is still attached to it, and
+        /// reports how many in the error response. Detach them first.
+        /// </summary>
+        /// <param name="landingPageId">ID of the landing page to delete</param>
+        public async Task DeleteLandingPageAsync(string landingPageId)
+        {
+            await _apiService.DeleteAsync($"/v1/console/landing-pages/{landingPageId}");
+        }
+
+        /// <summary>
         /// Retrieves iOS In-App Provisioning identifiers for a card template and access pass
         /// </summary>
         /// <param name="cardTemplateId">The card template ID</param>
