@@ -384,6 +384,35 @@ public async Task UpdateTemplateAsync()
 
 Each image you send replaces the one on the template, and images you leave out are untouched. `CredentialProfiles` and `LandingPages` replace the whole set: leave them unset to keep the current attachments, or pass an empty list to clear them.
 
+### Listing Card Templates
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task ListTemplatesAsync()
+{
+   var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+   var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+   using var client = new AccessGridClient(accountId, secretKey);
+
+   var result = await client.Console.ListTemplatesAsync(page: 1, perPage: 50);
+
+   foreach (var template in result.Templates)
+   {
+       Console.WriteLine($"{template.Id} [{template.Status}] {template.Name}");
+   }
+
+   Console.WriteLine($"Page {result.Pagination.CurrentPage} of {result.Pagination.TotalPages}");
+}
+```
+
+Templates come back newest first, 50 per page by default and 100 at most. Both arguments are optional.
+
+Each entry is a summary. The key counts, image URLs and attached credential profiles and landing pages are only returned by `ReadTemplateAsync`. Card template pairs aren't included here; `ListPassTemplatePairsAsync` lists those.
+
 ### Reading a Card Template
 
 ```csharp
@@ -1385,6 +1414,7 @@ public class AccessCardsApiTests
 | POST /v1/key-cards/{id}/delete | `AccessCards.DeleteAsync()` | Y |
 | POST /v1/console/card-templates | `Console.CreateTemplateAsync()` | Y |
 | PUT /v1/console/card-templates/{id} | `Console.UpdateTemplateAsync()` | Y |
+| GET /v1/console/card-templates | `Console.ListTemplatesAsync()` | Y |
 | GET /v1/console/card-templates/{id} | `Console.ReadTemplateAsync()` | Y |
 | POST /v1/console/card-templates/{id}/publish | `Console.PublishTemplateAsync()` | Y |
 | POST /v1/console/card-templates/{id}/smart-tap/reveal | `Console.RevealTemplatePrivateKeyAsync()` | Y |

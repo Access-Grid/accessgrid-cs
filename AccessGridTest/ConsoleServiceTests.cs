@@ -278,6 +278,97 @@ public class ConsoleServiceTests
         Assert.That(ex!.Message, Does.Contain("active_key_count"));
     }
 
+    #region ListTemplatesAsync
+
+    [Test]
+    public async Task ListTemplatesAsync_ReturnsTemplatesAndPagination()
+    {
+        var json = """
+        {
+            "card_templates": [
+                {
+                    "id": "tmpl_1",
+                    "name": "Newer Badge",
+                    "platform": "apple",
+                    "use_case": "corporate_id",
+                    "protocol": "desfire",
+                    "status": "ready",
+                    "created_at": "2026-09-02T00:00:00Z",
+                    "last_published_at": "2026-09-03T00:00:00Z",
+                    "metadata": { "department": "eng" }
+                },
+                {
+                    "id": "tmpl_2",
+                    "name": "Older Badge",
+                    "platform": "android",
+                    "use_case": "corporate_id",
+                    "protocol": "smart_tap",
+                    "status": "draft",
+                    "created_at": "2026-09-01T00:00:00Z",
+                    "last_published_at": null,
+                    "metadata": {}
+                }
+            ],
+            "pagination": {
+                "current_page": 1,
+                "per_page": 50,
+                "total_pages": 1,
+                "total_count": 2
+            }
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.ListTemplatesAsync();
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Templates, Has.Count.EqualTo(2));
+            Assert.That(result.Templates[0].Name, Is.EqualTo("Newer Badge"));
+            Assert.That(result.Templates[0].Status, Is.EqualTo("ready"));
+            Assert.That(result.Templates[1].Status, Is.EqualTo("draft"));
+            Assert.That(result.Templates[1].LastPublishedAt, Is.Null);
+            Assert.That(result.Pagination.TotalCount, Is.EqualTo(2));
+            Assert.That(result.Pagination.PerPage, Is.EqualTo(50));
+        });
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Get &&
+            req.RequestUri!.ToString().Contains("/v1/console/card-templates")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task ListTemplatesAsync_EchoesTheSignedPayload()
+    {
+        StubHttpResponse("""{"card_templates": [], "pagination": {"current_page": 1, "per_page": 50, "total_pages": 0, "total_count": 0}}""");
+
+        await _client.Console.ListTemplatesAsync();
+
+        // A collection path has no id to sign, so the payload is "{}". The server has no
+        // body to hash either, so it can only check the signature against what we echo back.
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            Uri.UnescapeDataString(req.RequestUri!.ToString()).Contains("sig_payload={}")
+        )), Times.Once);
+    }
+
+    [Test]
+    public async Task ListTemplatesAsync_SendsPaginationParams()
+    {
+        StubHttpResponse("""{"card_templates": [], "pagination": {"current_page": 2, "per_page": 10, "total_pages": 3, "total_count": 25}}""");
+
+        var result = await _client.Console.ListTemplatesAsync(page: 2, perPage: 10);
+
+        Assert.That(result.Templates, Is.Empty);
+
+        _mockHttpClient.Verify(x => x.SendAsync(It.Is<HttpRequestMessage>(req =>
+            req.RequestUri!.ToString().Contains("page=2") &&
+            req.RequestUri!.ToString().Contains("per_page=10")
+        )), Times.Once);
+    }
+
+    #endregion
+
     #region CreateTemplateAsync
 
     [Test]

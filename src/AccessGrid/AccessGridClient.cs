@@ -237,6 +237,13 @@ namespace AccessGrid
                     string idPayload = $@"{{""id"": ""{resourceId}""}}";
                     finalQueryParams["sig_payload"] = idPayload;
                 }
+                else
+                {
+                    // Collection paths have no id to sign, so the payload is "{}". The server
+                    // has no body to hash either, so it can only check the signature against
+                    // what we echo back here.
+                    finalQueryParams["sig_payload"] = payload;
+                }
             }
 
             // Build the URL with query parameters
