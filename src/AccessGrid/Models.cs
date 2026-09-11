@@ -294,6 +294,12 @@ namespace AccessGrid
         [JsonPropertyName("protocol")]
         public string Protocol { get; set; }
 
+        /// <summary>
+        /// Publishing state of the template: `draft`, `publishing`, `in-review` or `ready`
+        /// </summary>
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
+
         [JsonPropertyName("created_at")]
         public string CreatedAt { get; set; }
 
@@ -927,6 +933,18 @@ namespace AccessGrid
 
         [JsonPropertyName("ios_template")]
         public PassTemplatePairInfo IosTemplate { get; set; }
+    }
+
+    /// <summary>
+    /// A page of card templates with pagination info
+    /// </summary>
+    public class TemplatesResponse
+    {
+        [JsonPropertyName("card_templates")]
+        public List<Template> Templates { get; set; } = new List<Template>();
+
+        [JsonPropertyName("pagination")]
+        public PaginationInfo Pagination { get; set; }
     }
 
     /// <summary>

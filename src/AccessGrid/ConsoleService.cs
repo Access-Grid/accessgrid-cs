@@ -160,6 +160,30 @@ namespace AccessGrid
         }
 
         /// <summary>
+        /// Lists card templates, newest first (enterprise only).
+        ///
+        /// Each entry is a summary: the per-template key counts, image URLs and
+        /// associations are only returned by ReadTemplateAsync. Card template pairs are
+        /// listed separately by ListPassTemplatePairsAsync.
+        /// </summary>
+        /// <param name="page">Page number (defaults to 1 on the server)</param>
+        /// <param name="perPage">Items per page, max 100 (defaults to 50 on the server)</param>
+        /// <returns>Card templates with pagination info</returns>
+        public async Task<TemplatesResponse> ListTemplatesAsync(int? page = null, int? perPage = null)
+        {
+            var queryParams = new Dictionary<string, string>();
+
+            if (page.HasValue)
+                queryParams.Add("page", page.Value.ToString());
+
+            if (perPage.HasValue)
+                queryParams.Add("per_page", perPage.Value.ToString());
+
+            var response = await _apiService.GetAsync<TemplatesResponse>("/v1/console/card-templates", queryParams);
+            return response ?? new TemplatesResponse();
+        }
+
+        /// <summary>
         /// Lists pass template pairs (enterprise only)
         /// </summary>
         /// <param name="page">Page number (defaults to 1 on the server)</param>
