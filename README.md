@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.8.1
+Install-Package accessgrid -Version 1.9.0
 ```
 
 ## Authentication
@@ -284,6 +284,8 @@ public async Task UnlinkCardAsync()
 ```csharp
 using AccessGrid;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 public async Task CreateTemplateAsync()
@@ -311,6 +313,11 @@ public async Task CreateTemplateAsync()
        SupportEmail = "support@yourcompany.com",
        PrivacyPolicyUrl = "https://yourcompany.com/privacy",
        TermsAndConditionsUrl = "https://yourcompany.com/terms",
+       Background = Convert.ToBase64String(File.ReadAllBytes("background.png")),
+       Logo = Convert.ToBase64String(File.ReadAllBytes("logo.png")),
+       Icon = Convert.ToBase64String(File.ReadAllBytes("icon.png")),
+       CredentialProfiles = new List<string> { "cp_1a2b3c" },
+       LandingPages = new List<string> { "lp_4d5e6f" },
        Metadata = new Dictionary<string, object>
        {
            ["version"] = "2.1",
@@ -322,12 +329,17 @@ public async Task CreateTemplateAsync()
 }
 ```
 
+Images must be PNG, 10MB or smaller, and their dimensions are validated against the template's platform and protocol. `MemberPhoto` takes the cardholder photo the same way.
+
+A card template needs its images and at least one landing page before it can be published, so supplying them here saves a round trip. Apple DESFire templates also need a credential profile attached.
+
 ### Updating a Card Template
 
 ```csharp
 using AccessGrid;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 public async Task UpdateTemplateAsync()
@@ -354,6 +366,9 @@ public async Task UpdateTemplateAsync()
          SupportEmail = "support@yourcompany.com",
          PrivacyPolicyUrl = "https://yourcompany.com/privacy",
          TermsAndConditionsUrl = "https://yourcompany.com/terms",
+         Logo = Convert.ToBase64String(File.ReadAllBytes("new-logo.png")),
+         CredentialProfiles = new List<string> { "cp_1a2b3c" },
+         LandingPages = new List<string> { "lp_4d5e6f" },
          Metadata = new Dictionary<string, object>
          {
              ["department"] = "engineering",
@@ -366,6 +381,8 @@ public async Task UpdateTemplateAsync()
    Console.WriteLine($"Department: {template.Metadata["department"]}");
 }
 ```
+
+Each image you send replaces the one on the template, and images you leave out are untouched. `CredentialProfiles` and `LandingPages` replace the whole set: leave them unset to keep the current attachments, or pass an empty list to clear them.
 
 ### Reading a Card Template
 

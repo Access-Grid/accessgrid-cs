@@ -329,6 +329,108 @@ public class ConsoleServiceTests
         });
     }
 
+    [Test]
+    public async Task CreateTemplateAsync_SendsImageAndAssociationFields()
+    {
+        var json = """
+        {
+            "id": "tmpl-images",
+            "name": "Employee Access Pass",
+            "platform": "apple",
+            "use_case": "corporate_id",
+            "protocol": "desfire"
+        }
+        """;
+
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        await _client.Console.CreateTemplateAsync(new CreateTemplateRequest
+        {
+            Name = "Employee Access Pass",
+            Platform = Platform.Apple,
+            UseCase = "corporate_id",
+            Protocol = Protocol.DESFire,
+            Background = "YmFja2dyb3VuZA==",
+            Logo = "bG9nbw==",
+            Icon = "aWNvbg==",
+            MemberPhoto = "cGhvdG8=",
+            CredentialProfiles = new List<string> { "cp_1", "cp_2" },
+            LandingPages = new List<string> { "lp_1" }
+        });
+
+        Assert.That(capturedBody, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedBody, Does.Contain("\"background\""));
+            Assert.That(capturedBody, Does.Contain("YmFja2dyb3VuZA=="));
+            Assert.That(capturedBody, Does.Contain("\"logo\""));
+            Assert.That(capturedBody, Does.Contain("bG9nbw=="));
+            Assert.That(capturedBody, Does.Contain("\"icon\""));
+            Assert.That(capturedBody, Does.Contain("aWNvbg=="));
+            Assert.That(capturedBody, Does.Contain("\"member_photo\""));
+            Assert.That(capturedBody, Does.Contain("cGhvdG8="));
+            Assert.That(capturedBody, Does.Contain("\"credential_profiles\""));
+            Assert.That(capturedBody, Does.Contain("cp_1"));
+            Assert.That(capturedBody, Does.Contain("cp_2"));
+            Assert.That(capturedBody, Does.Contain("\"landing_pages\""));
+            Assert.That(capturedBody, Does.Contain("lp_1"));
+        });
+    }
+
+    [Test]
+    public async Task CreateTemplateAsync_OmitsUnsetImageAndAssociationFields()
+    {
+        var json = """
+        {
+            "id": "tmpl-bare",
+            "name": "Employee Access Pass"
+        }
+        """;
+
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        await _client.Console.CreateTemplateAsync(new CreateTemplateRequest
+        {
+            Name = "Employee Access Pass",
+            Platform = Platform.Apple,
+            UseCase = "corporate_id",
+            Protocol = Protocol.DESFire
+        });
+
+        Assert.That(capturedBody, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedBody, Does.Not.Contain("\"background\""));
+            Assert.That(capturedBody, Does.Not.Contain("\"logo\""));
+            Assert.That(capturedBody, Does.Not.Contain("\"icon\""));
+            Assert.That(capturedBody, Does.Not.Contain("\"member_photo\""));
+            Assert.That(capturedBody, Does.Not.Contain("\"credential_profiles\""));
+            Assert.That(capturedBody, Does.Not.Contain("\"landing_pages\""));
+        });
+    }
+
     #endregion
 
     #region UpdateTemplateAsync
@@ -370,6 +472,97 @@ public class ConsoleServiceTests
             Assert.That(capturedBody, Does.Contain("\"metadata\""));
             Assert.That(capturedBody, Does.Contain("department"));
             Assert.That(capturedBody, Does.Contain("eng"));
+        });
+    }
+
+    [Test]
+    public async Task UpdateTemplateAsync_SendsImageAndAssociationFields()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge"
+        }
+        """;
+
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        await _client.Console.UpdateTemplateAsync(new UpdateTemplateRequest
+        {
+            CardTemplateId = "tmpl-123",
+            Background = "YmFja2dyb3VuZA==",
+            Logo = "bG9nbw==",
+            Icon = "aWNvbg==",
+            MemberPhoto = "cGhvdG8=",
+            CredentialProfiles = new List<string> { "cp_1" },
+            LandingPages = new List<string> { "lp_1", "lp_2" }
+        });
+
+        Assert.That(capturedBody, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedBody, Does.Contain("\"background\""));
+            Assert.That(capturedBody, Does.Contain("YmFja2dyb3VuZA=="));
+            Assert.That(capturedBody, Does.Contain("\"logo\""));
+            Assert.That(capturedBody, Does.Contain("bG9nbw=="));
+            Assert.That(capturedBody, Does.Contain("\"icon\""));
+            Assert.That(capturedBody, Does.Contain("aWNvbg=="));
+            Assert.That(capturedBody, Does.Contain("\"member_photo\""));
+            Assert.That(capturedBody, Does.Contain("cGhvdG8="));
+            Assert.That(capturedBody, Does.Contain("\"credential_profiles\""));
+            Assert.That(capturedBody, Does.Contain("cp_1"));
+            Assert.That(capturedBody, Does.Contain("\"landing_pages\""));
+            Assert.That(capturedBody, Does.Contain("lp_1"));
+            Assert.That(capturedBody, Does.Contain("lp_2"));
+        });
+    }
+
+    [Test]
+    public async Task UpdateTemplateAsync_SendsEmptyAssociationArraysToClear()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge"
+        }
+        """;
+
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
+                };
+            });
+
+        await _client.Console.UpdateTemplateAsync(new UpdateTemplateRequest
+        {
+            CardTemplateId = "tmpl-123",
+            CredentialProfiles = new List<string>(),
+            LandingPages = new List<string>()
+        });
+
+        Assert.That(capturedBody, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedBody, Does.Contain("\"credential_profiles\":[]"));
+            Assert.That(capturedBody, Does.Contain("\"landing_pages\":[]"));
         });
     }
 
@@ -438,6 +631,95 @@ public class ConsoleServiceTests
         var result = await _client.Console.ReadTemplateAsync("tmpl-123");
 
         Assert.That(result.Metadata, Is.Null);
+    }
+
+    [Test]
+    public async Task ReadTemplateAsync_ExposesImageUrlsAndAssociations()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge",
+            "images": {
+                "logo": "https://example.com/logo.png",
+                "background_image": "https://example.com/background.png",
+                "icon": "https://example.com/icon.png",
+                "member_photo": "https://example.com/member.png"
+            },
+            "credential_profiles": ["cp_1", "cp_2"],
+            "landing_pages": ["lp_1"]
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.ReadTemplateAsync("tmpl-123");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.LogoUrl, Is.EqualTo("https://example.com/logo.png"));
+            Assert.That(result.BackgroundImageUrl, Is.EqualTo("https://example.com/background.png"));
+            Assert.That(result.IconUrl, Is.EqualTo("https://example.com/icon.png"));
+            Assert.That(result.MemberPhotoUrl, Is.EqualTo("https://example.com/member.png"));
+            Assert.That(result.CredentialProfiles, Is.EqualTo(new List<string> { "cp_1", "cp_2" }));
+            Assert.That(result.LandingPages, Is.EqualTo(new List<string> { "lp_1" }));
+        });
+    }
+
+    [Test]
+    public async Task ReadTemplateAsync_HasNullImageUrls_WhenImagesAbsent()
+    {
+        var json = """
+        {
+            "id": "tmpl-123",
+            "name": "Corporate Badge"
+        }
+        """;
+        StubHttpResponse(json);
+
+        var result = await _client.Console.ReadTemplateAsync("tmpl-123");
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.LogoUrl, Is.Null);
+            Assert.That(result.BackgroundImageUrl, Is.Null);
+            Assert.That(result.IconUrl, Is.Null);
+            Assert.That(result.MemberPhotoUrl, Is.Null);
+        });
+    }
+
+    [Test]
+    public async Task CreateTemplateAsync_ExposesImageUrlsFromResponse()
+    {
+        var json = """
+        {
+            "id": "tmpl-new",
+            "estimated_publishing_date": "2026-09-18T00:00:00Z",
+            "images": {
+                "logo": "https://example.com/logo.png",
+                "background_image": "https://example.com/background.png",
+                "icon": "https://example.com/icon.png",
+                "member_photo": null
+            },
+            "metadata": {}
+        }
+        """;
+        StubHttpResponse(json, HttpStatusCode.Created);
+
+        var result = await _client.Console.CreateTemplateAsync(new CreateTemplateRequest
+        {
+            Name = "Employee Access Pass",
+            Platform = Platform.Apple,
+            UseCase = "corporate_id",
+            Protocol = Protocol.DESFire
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.LogoUrl, Is.EqualTo("https://example.com/logo.png"));
+            Assert.That(result.BackgroundImageUrl, Is.EqualTo("https://example.com/background.png"));
+            Assert.That(result.IconUrl, Is.EqualTo("https://example.com/icon.png"));
+            Assert.That(result.MemberPhotoUrl, Is.Null);
+        });
     }
 
     #endregion
