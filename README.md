@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.10.0
+Install-Package accessgrid -Version 1.11.0
 ```
 
 ## Authentication
@@ -554,6 +554,31 @@ public async Task CreatePassTemplatePairAsync()
 }
 ```
 
+### Renaming a Pass Template Pair
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task UpdatePassTemplatePairAsync()
+{
+   var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+   var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+   using var client = new AccessGridClient(accountId, secretKey);
+
+   var pair = await client.Console.UpdatePassTemplatePairAsync("0xpa1rt3mp14t3", new UpdatePassTemplatePairRequest
+   {
+       Name = "Contractor Badge Pair"
+   });
+
+   Console.WriteLine($"Pair renamed: {pair.Name}");
+}
+```
+
+Only the name can be changed. The two card templates a pair links are fixed once it exists.
+
 ### Deleting a Pass Template Pair
 
 ```csharp
@@ -802,6 +827,19 @@ public async Task CreateProfileAsync()
     Console.WriteLine($"AID: {profile.Aid}");
 }
 ```
+
+#### Rename a Credential Profile
+
+```csharp
+var profile = await client.Console.CredentialProfiles.UpdateAsync("a1b2c3d4e5f", new UpdateCredentialProfileRequest
+{
+    Name = "Miami Office Profile"
+});
+
+Console.WriteLine($"Profile renamed: {profile.Name}");
+```
+
+Only the name can be changed. Keys, application and file settings are fixed once the profile exists.
 
 #### Delete a Credential Profile
 
@@ -1354,6 +1392,7 @@ public class AccessCardsApiTests
 | GET /v1/console/card-templates/{id}/logs | `Console.EventLogAsync()` | Y |
 | GET /v1/console/card-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
 | POST /v1/console/card-template-pairs | `Console.CreatePassTemplatePairAsync()` | Y |
+| PUT /v1/console/card-template-pairs/{id} | `Console.UpdatePassTemplatePairAsync()` | Y |
 | DELETE /v1/console/card-template-pairs/{id} | `Console.DeletePassTemplatePairAsync()` | Y |
 | POST /v1/console/card-templates/{id}/ios_preflight | `Console.IosPreflightAsync()` | Y |
 | GET /v1/console/ledger-items | `Console.GetLedgerItemsAsync()` | Y |
@@ -1363,6 +1402,7 @@ public class AccessCardsApiTests
 | DELETE /v1/console/landing-pages/{id} | `Console.DeleteLandingPageAsync()` | Y |
 | GET /v1/console/credential-profiles | `Console.CredentialProfiles.ListAsync()` | Y |
 | POST /v1/console/credential-profiles | `Console.CredentialProfiles.CreateAsync()` | Y |
+| PUT /v1/console/credential-profiles/{id} | `Console.CredentialProfiles.UpdateAsync()` | Y |
 | DELETE /v1/console/credential-profiles/{id} | `Console.CredentialProfiles.DeleteAsync()` | Y |
 | GET /v1/console/webhooks | `Console.Webhooks.ListAsync()` | Y |
 | POST /v1/console/webhooks | `Console.Webhooks.CreateAsync()` | Y |
