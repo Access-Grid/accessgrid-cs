@@ -192,6 +192,19 @@ namespace AccessGrid
         }
 
         /// <summary>
+        /// Deletes a pass template pair.
+        ///
+        /// The API refuses while any key issued through the pair is still live, and reports
+        /// how many in the error response. Deleting the pair leaves both of its card
+        /// templates in place; delete those separately with DeleteTemplateAsync.
+        /// </summary>
+        /// <param name="pairId">ID of the pass template pair to delete</param>
+        public async Task DeletePassTemplatePairAsync(string pairId)
+        {
+            await _apiService.DeleteAsync($"/v1/console/card-template-pairs/{pairId}");
+        }
+
+        /// <summary>
         /// Gets ledger/billing items (enterprise only)
         /// </summary>
         /// <param name="page">Page number (defaults to 1 on the server)</param>
@@ -250,6 +263,18 @@ namespace AccessGrid
         {
             var response = await _apiService.PutAsync<LandingPage>($"/v1/console/landing-pages/{landingPageId}", request);
             return response;
+        }
+
+        /// <summary>
+        /// Deletes a landing page.
+        ///
+        /// The API refuses while any active card template is still attached to it, and
+        /// reports how many in the error response. Detach them first.
+        /// </summary>
+        /// <param name="landingPageId">ID of the landing page to delete</param>
+        public async Task DeleteLandingPageAsync(string landingPageId)
+        {
+            await _apiService.DeleteAsync($"/v1/console/landing-pages/{landingPageId}");
         }
 
         /// <summary>

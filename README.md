@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.9.0
+Install-Package accessgrid -Version 1.10.0
 ```
 
 ## Authentication
@@ -554,6 +554,28 @@ public async Task CreatePassTemplatePairAsync()
 }
 ```
 
+### Deleting a Pass Template Pair
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task DeletePassTemplatePairAsync()
+{
+   var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+   var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+   using var client = new AccessGridClient(accountId, secretKey);
+
+   await client.Console.DeletePassTemplatePairAsync("0xpa1rt3mp14t3");
+
+   Console.WriteLine("Pair deleted");
+}
+```
+
+A pair can only be deleted once every key issued through it has been deleted. If any are still live, the call throws and the error names how many. Deleting the pair leaves both of its card templates in place, so delete those separately with `DeleteTemplateAsync` if you no longer need them.
+
 ### Getting Ledger Items
 
 ```csharp
@@ -703,6 +725,28 @@ public async Task UpdateLandingPageAsync()
     Console.WriteLine($"Name: {landingPage.Name}");
 }
 ```
+
+#### Delete a Landing Page
+
+```csharp
+using AccessGrid;
+using System;
+using System.Threading.Tasks;
+
+public async Task DeleteLandingPageAsync()
+{
+    var accountId = Environment.GetEnvironmentVariable("ACCOUNT_ID");
+    var secretKey = Environment.GetEnvironmentVariable("SECRET_KEY");
+
+    using var client = new AccessGridClient(accountId, secretKey);
+
+    await client.Console.DeleteLandingPageAsync("0xlandingpage1d");
+
+    Console.WriteLine("Landing page deleted");
+}
+```
+
+A landing page can only be deleted once no active card template is attached to it. If any still are, the call throws and the error names how many, so detach them first. Deleting a landing page twice throws the second time, because a deleted page is no longer found.
 
 ### Credential Profiles
 
@@ -1310,11 +1354,13 @@ public class AccessCardsApiTests
 | GET /v1/console/card-templates/{id}/logs | `Console.EventLogAsync()` | Y |
 | GET /v1/console/card-template-pairs | `Console.ListPassTemplatePairsAsync()` | Y |
 | POST /v1/console/card-template-pairs | `Console.CreatePassTemplatePairAsync()` | Y |
+| DELETE /v1/console/card-template-pairs/{id} | `Console.DeletePassTemplatePairAsync()` | Y |
 | POST /v1/console/card-templates/{id}/ios_preflight | `Console.IosPreflightAsync()` | Y |
 | GET /v1/console/ledger-items | `Console.GetLedgerItemsAsync()` | Y |
 | GET /v1/console/landing-pages | `Console.ListLandingPagesAsync()` | Y |
 | POST /v1/console/landing-pages | `Console.CreateLandingPageAsync()` | Y |
 | PUT /v1/console/landing-pages/{id} | `Console.UpdateLandingPageAsync()` | Y |
+| DELETE /v1/console/landing-pages/{id} | `Console.DeleteLandingPageAsync()` | Y |
 | GET /v1/console/credential-profiles | `Console.CredentialProfiles.ListAsync()` | Y |
 | POST /v1/console/credential-profiles | `Console.CredentialProfiles.CreateAsync()` | Y |
 | DELETE /v1/console/credential-profiles/{id} | `Console.CredentialProfiles.DeleteAsync()` | Y |
