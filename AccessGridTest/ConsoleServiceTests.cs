@@ -2263,6 +2263,85 @@ public class ConsoleServiceTests
     }
 
     [Test]
+    public async Task CredentialProfilesCreateAsync_SendsReverseAidWhenSet()
+    {
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """{"id": "cp_new", "name": "Main Office Profile", "reverse_aid": false}""",
+                        Encoding.UTF8,
+                        "application/json")
+                };
+            });
+
+        var result = await _client.Console.CredentialProfiles.CreateAsync(new CreateCredentialProfileRequest
+        {
+            Name = "Main Office Profile",
+            AppName = "KEY-ID-main",
+            ReverseAid = false,
+            Keys = new[] { new KeyParam { Value = "00112233445566778899aabbccddeeff" } }
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedBody, Does.Contain("\"reverse_aid\":false"));
+            Assert.That(result.ReverseAid, Is.False);
+        });
+    }
+
+    [Test]
+    public async Task CredentialProfilesCreateAsync_OmitsReverseAidWhenUnset()
+    {
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """{"id": "cp_new", "name": "Main Office Profile", "reverse_aid": true}""",
+                        Encoding.UTF8,
+                        "application/json")
+                };
+            });
+
+        var result = await _client.Console.CredentialProfiles.CreateAsync(new CreateCredentialProfileRequest
+        {
+            Name = "Main Office Profile",
+            AppName = "KEY-ID-main",
+            Keys = new[] { new KeyParam { Value = "00112233445566778899aabbccddeeff" } }
+        });
+
+        // The server only applies the field when the key is present, so sending "false"
+        // for an unset property would silently flip its default.
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedBody, Does.Not.Contain("reverse_aid"));
+            Assert.That(result.ReverseAid, Is.True);
+        });
+    }
+
+    [Test]
+    public async Task CredentialProfilesListAsync_ReadsReverseAid()
+    {
+        StubHttpResponse("""[{"id": "cp_1", "name": "Main Office Profile", "reverse_aid": false}]""");
+
+        var profiles = await _client.Console.CredentialProfiles.ListAsync();
+
+        Assert.That(profiles[0].ReverseAid, Is.False);
+    }
+
+    [Test]
     public async Task CredentialProfilesUpdateAsync_RenamesTheProfile()
     {
         var json = """

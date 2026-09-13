@@ -857,6 +857,8 @@ public async Task CreateProfileAsync()
 }
 ```
 
+`ReverseAid` controls whether the application identifier is reversed when diversifying keys. It defaults to true, so leave it unset unless you need to opt out, and read it back from `profile.ReverseAid`. It only affects profiles with a diversified key, and it can not be changed after the profile is created.
+
 #### Rename a Credential Profile
 
 ```csharp
