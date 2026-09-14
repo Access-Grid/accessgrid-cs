@@ -1714,6 +1714,12 @@ namespace AccessGrid
         [JsonPropertyName("apple_id")]
         public string AppleId { get; set; }
 
+        /// <summary>
+        /// Whether the application identifier is reversed when diversifying keys
+        /// </summary>
+        [JsonPropertyName("reverse_aid")]
+        public bool ReverseAid { get; set; }
+
         [JsonPropertyName("created_at")]
         public string CreatedAt { get; set; }
 
@@ -1765,6 +1771,14 @@ namespace AccessGrid
 
         [JsonPropertyName("file_id")]
         public string FileId { get; set; }
+
+        /// <summary>
+        /// Whether the application identifier is reversed when diversifying keys. Defaults
+        /// to true on the server. Leave unset to keep that default; only profiles with a
+        /// diversified key are affected. Can not be changed after the profile is created.
+        /// </summary>
+        [JsonPropertyName("reverse_aid")]
+        public bool? ReverseAid { get; set; }
 
         [JsonPropertyName("keys")]
         public KeyParam[] Keys { get; set; }

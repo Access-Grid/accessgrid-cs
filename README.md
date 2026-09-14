@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.12.0
+Install-Package accessgrid -Version 1.13.0
 ```
 
 ## Authentication
@@ -856,6 +856,8 @@ public async Task CreateProfileAsync()
     Console.WriteLine($"AID: {profile.Aid}");
 }
 ```
+
+`ReverseAid` controls whether the application identifier is reversed when diversifying keys. It defaults to true, so leave it unset unless you need to opt out, and read it back from `profile.ReverseAid`. It only affects profiles with a diversified key, and it can not be changed after the profile is created.
 
 #### Rename a Credential Profile
 
