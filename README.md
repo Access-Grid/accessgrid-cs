@@ -138,6 +138,8 @@ public async Task ProvisionCardAsync()
 }
 ```
 
+If your card template uses key diversification, the server generates a system identifier for each key and returns it in `card.SystemId`. Only issue returns it; it is null on cards from `GetAsync`, `ListAsync` and `UpdateAsync`, so store it when you issue. Set `SystemId` to supply your own, or `SkipSystemId = true` to leave it out of diversification. You can't set both. `SystemId` must be an even number of hex characters; the server does not check this and uses any other value as raw text.
+
 ### Provisioning a Multi-Family (Resident) Pass
 
 For `multi_family` templates, `ProvisionCardRequest` carries resident-specific fields:
