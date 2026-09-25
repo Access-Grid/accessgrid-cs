@@ -2342,6 +2342,71 @@ public class ConsoleServiceTests
     }
 
     [Test]
+    public async Task CredentialProfilesCreateAsync_SendsFileSizeWhenSet()
+    {
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """{"id": "cp_new", "name": "Main Office Profile", "files": [{"ex_id": "00", "file_size": 256}]}""",
+                        Encoding.UTF8,
+                        "application/json")
+                };
+            });
+
+        var result = await _client.Console.CredentialProfiles.CreateAsync(new CreateCredentialProfileRequest
+        {
+            Name = "Main Office Profile",
+            AppName = "KEY-ID-main",
+            FileSize = 256,
+            Keys = new[] { new KeyParam { Value = "00112233445566778899aabbccddeeff", KeysDiversified = true } }
+        });
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(capturedBody, Does.Contain("\"file_size\":256"));
+            Assert.That(result.Files[0].FileSize, Is.EqualTo(256));
+        });
+    }
+
+    [Test]
+    public async Task CredentialProfilesCreateAsync_OmitsFileSizeWhenUnset()
+    {
+        string? capturedBody = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Returns<HttpRequestMessage>(async req =>
+            {
+                if (req.Content != null)
+                    capturedBody = await req.Content.ReadAsStringAsync();
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(
+                        """{"id": "cp_new", "name": "Main Office Profile"}""",
+                        Encoding.UTF8,
+                        "application/json")
+                };
+            });
+
+        await _client.Console.CredentialProfiles.CreateAsync(new CreateCredentialProfileRequest
+        {
+            Name = "Main Office Profile",
+            AppName = "KEY-ID-main",
+            Keys = new[] { new KeyParam { Value = "00112233445566778899aabbccddeeff" } }
+        });
+
+        // The server validates file_size whenever the key is present, so a stray key on a
+        // profile with no diversified key would be rejected.
+        Assert.That(capturedBody, Does.Not.Contain("file_size"));
+    }
+
+    [Test]
     public async Task CredentialProfilesUpdateAsync_RenamesTheProfile()
     {
         var json = """

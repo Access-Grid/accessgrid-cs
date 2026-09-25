@@ -5,7 +5,7 @@ Official C# SDK for interacting with the AccessGrid API.
 ## Installation
 
 ```
-Install-Package accessgrid -Version 1.13.0
+Install-Package accessgrid -Version 1.14.0
 ```
 
 ## Authentication
@@ -137,6 +137,8 @@ public async Task ProvisionCardAsync()
     Console.WriteLine($"Install URL: {card.Url}");
 }
 ```
+
+If your card template uses key diversification, the server generates a system identifier for each key and returns it in `card.SystemId`. Only issue returns it; it is null on cards from `GetAsync`, `ListAsync` and `UpdateAsync`, so store it when you issue. Set `SystemId` to supply your own, or `SkipSystemId = true` to leave it out of diversification. You can't set both. `SystemId` must be an even number of hex characters; the server does not check this and uses any other value as raw text.
 
 ### Provisioning a Multi-Family (Resident) Pass
 
@@ -858,6 +860,8 @@ public async Task CreateProfileAsync()
 ```
 
 `ReverseAid` controls whether the application identifier is reversed when diversifying keys. It defaults to true, so leave it unset unless you need to opt out, and read it back from `profile.ReverseAid`. It only affects profiles with a diversified key, and it can not be changed after the profile is created.
+
+`FileSize` sets the size in bytes of the profile's file. It is only allowed when at least one key has `KeysDiversified = true`, and must be between 1 and your account's maximum (1024 by default). Read it back from `profile.Files[0].FileSize`.
 
 #### Rename a Credential Profile
 

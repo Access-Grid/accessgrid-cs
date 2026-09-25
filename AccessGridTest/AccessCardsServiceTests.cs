@@ -360,6 +360,95 @@ public class AccessCardsServiceTests
 
     #endregion
 
+    #region Key diversification
+
+    [Test]
+    public async Task IssueAsync_SendsSystemIdAndReadsItBack()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Callback<HttpRequestMessage>(req => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """{"id":"0xkd1","state":"active","system_id":"a1b2c3"}""",
+                    Encoding.UTF8, "application/json")
+            });
+
+        var request = new ProvisionCardRequest
+        {
+            CardTemplateId = "0xdiversified",
+            FullName = "Jane Doe",
+            SystemId = "a1b2c3"
+        };
+
+        var result = await _httpClient.AccessCards.IssueAsync(request);
+
+        var body = await capturedRequest!.Content!.ReadAsStringAsync();
+        Assert.Multiple(() =>
+        {
+            Assert.That(body, Does.Contain("\"system_id\":\"a1b2c3\""));
+            Assert.That(result.SystemId, Is.EqualTo("a1b2c3"));
+        });
+    }
+
+    [Test]
+    public async Task IssueAsync_SendsSkipSystemId()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Callback<HttpRequestMessage>(req => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """{"id":"0xkd2","state":"active"}""",
+                    Encoding.UTF8, "application/json")
+            });
+
+        var request = new ProvisionCardRequest
+        {
+            CardTemplateId = "0xdiversified",
+            FullName = "Jane Doe",
+            SkipSystemId = true
+        };
+
+        await _httpClient.AccessCards.IssueAsync(request);
+
+        var body = await capturedRequest!.Content!.ReadAsStringAsync();
+        Assert.That(body, Does.Contain("\"skip_system_id\":true"));
+    }
+
+    [Test]
+    public async Task IssueAsync_OmitsSystemIdFieldsWhenUnset()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        _mockHttpClient
+            .Setup(x => x.SendAsync(It.IsAny<HttpRequestMessage>()))
+            .Callback<HttpRequestMessage>(req => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """{"id":"0xkd3","state":"active"}""",
+                    Encoding.UTF8, "application/json")
+            });
+
+        var request = new ProvisionCardRequest
+        {
+            CardTemplateId = "0xdiversified",
+            FullName = "Jane Doe"
+        };
+
+        await _httpClient.AccessCards.IssueAsync(request);
+
+        // The server rejects a request carrying both keys, so neither may be sent unset.
+        var body = await capturedRequest!.Content!.ReadAsStringAsync();
+        Assert.That(body, Does.Not.Contain("system_id"));
+    }
+
+    #endregion
+
     [Test]
     public async Task GetAsync_DeserializesTagId()
     {
