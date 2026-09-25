@@ -1780,6 +1780,14 @@ namespace AccessGrid
         [JsonPropertyName("reverse_aid")]
         public bool? ReverseAid { get; set; }
 
+        /// <summary>
+        /// Size in bytes of the profile's file. Only allowed when at least one key is
+        /// diversified, and must be between 1 and your account's maximum (1024 by default).
+        /// Leave unset to use the server default.
+        /// </summary>
+        [JsonPropertyName("file_size")]
+        public int? FileSize { get; set; }
+
         [JsonPropertyName("keys")]
         public KeyParam[] Keys { get; set; }
     }

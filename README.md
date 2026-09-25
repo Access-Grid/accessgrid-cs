@@ -859,6 +859,8 @@ public async Task CreateProfileAsync()
 
 `ReverseAid` controls whether the application identifier is reversed when diversifying keys. It defaults to true, so leave it unset unless you need to opt out, and read it back from `profile.ReverseAid`. It only affects profiles with a diversified key, and it can not be changed after the profile is created.
 
+`FileSize` sets the size in bytes of the profile's file. It is only allowed when at least one key has `KeysDiversified = true`, and must be between 1 and your account's maximum (1024 by default). Read it back from `profile.Files[0].FileSize`.
+
 #### Rename a Credential Profile
 
 ```csharp
